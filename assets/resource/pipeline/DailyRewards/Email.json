@@ -1,5 +1,12 @@
 {
     "Email": {
+        "desc": "邮箱入口",
+        "next": [
+            "EmailStart",
+            "EndTask"
+        ]
+    },
+    "EmailStart": {
         "desc": "邮箱",
         "recognition": {
             "type": "TemplateMatch",

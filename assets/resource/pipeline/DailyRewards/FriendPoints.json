@@ -1,5 +1,12 @@
 {
     "FriendPoints": {
+        "desc": "友情点入口",
+        "next": [
+            "FriendPointsStart",
+            "EndTask"
+        ]
+    },
+    "FriendPointsStart": {
         "desc": "友情点",
         "recognition": {
             "type": "TemplateMatch",

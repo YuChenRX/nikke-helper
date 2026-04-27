@@ -1,10 +1,26 @@
 {
     "DailyRewards": {
+        "desc": "每日奖励入口",
+        "next": [
+            "DailyRewardsStart",
+            "[JumpBack]EnterHall"
+        ]
+    },
+    "DailyRewardsStart": {
         "desc": "每日奖励",
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "ArkFlagInHall"
+                ]
+            }
+        },
         "next": [
             "[JumpBack]FriendPoints",
             "[JumpBack]Email",
             "[JumpBack]RankingRewards",
+            "[JumpBack]Mission",
             "EndTask"
         ]
     }

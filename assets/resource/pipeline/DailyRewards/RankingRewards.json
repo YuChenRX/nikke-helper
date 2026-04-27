@@ -2,7 +2,6 @@
     "RankingRewards": {
         "desc": "排名奖励入口",
         "next": [
-            "[JumpBack]EnterHall",
             "RankingRewardsStart",
             "EndTask"
         ]
@@ -98,6 +97,9 @@
                     "全部领取"
                 ]
             }
-        }
+        },
+        "next": [
+            "EnterHall"
+        ]
     }
 }
