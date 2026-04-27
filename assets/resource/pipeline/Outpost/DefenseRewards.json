@@ -42,6 +42,7 @@
         "next": [
             "[JumpBack]ClaimDefenseRewards",
             "[JumpBack]WipeOut",
+            "[JumpBack]RewardConfirm",
             "FlagInOutpost",
             "[JumpBack]GoBack"
         ]
@@ -66,11 +67,7 @@
         "action": {
             "type": "Click"
         },
-        "post_wait_freezes": 1000,
-        "next": [
-            "[JumpBack]RewardConfirm",
-            "EndTask"
-        ]
+        "post_wait_freezes": 1000
     },
     "WipeOut": {
         "desc": "一举歼灭",
