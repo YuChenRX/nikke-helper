@@ -43,6 +43,24 @@
     "ClickArk": {
         "desc": "点大厅的方舟",
         "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "ArkFlagInHall"
+                ]
+            }
+        },
+        "action": {
+            "type": "Click"
+        },
+        "next": [
+            "FlagInArk",
+            "ClickArk"
+        ]
+    },
+    "ArkFlagInHall": {
+        "desc": "大厅的方舟标识",
+        "recognition": {
             "type": "OCR",
             "param": {
                 "roi": [
@@ -55,14 +73,7 @@
                     "方舟"
                 ]
             }
-        },
-        "action": {
-            "type": "Click"
-        },
-        "next": [
-            "FlagInArk",
-            "ClickArk"
-        ]
+        }
     },
     "Confirm": {
         "desc": "确认",
