@@ -37,7 +37,7 @@
         "next": [
             "[JumpBack]FreeBattle",
             "FlagInArena",
-            "[JumpBack]GoBack"
+            "[JumpBack]CommonGoBack"
         ]
     },
     "SpecialArenaRedDot": {

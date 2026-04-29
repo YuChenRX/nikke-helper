@@ -125,7 +125,7 @@
         "next": [
             "PassClaimed",
             "[JumpBack]PassClaimAll",
-            "[JumpBack]RewardConfirm"
+            "[JumpBack]CommonConfirmReward"
         ]
     },
     "PassClaimed": {
@@ -153,7 +153,7 @@
             }
         },
         "next": [
-            "PageClose"
+            "CommonClosePage"
         ]
     },
     "PassClaimAll": {

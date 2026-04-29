@@ -26,8 +26,8 @@
             "type": "Click"
         },
         "next": [
-            "[JumpBack]ActionConfirm",
-            "[JumpBack]RewardConfirm",
+            "[JumpBack]CommonConfirmAction",
+            "[JumpBack]CommonConfirmReward",
             "SpecialReward",
             "EndTask"
         ]

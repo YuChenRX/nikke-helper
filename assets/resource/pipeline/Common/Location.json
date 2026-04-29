@@ -4,14 +4,14 @@
         "anchor": "NeedCheck",
         "timeout": 120000,
         "next": [
-            "[JumpBack]PageClose",
+            "[JumpBack]CommonClosePage",
             "[JumpBack]ServerConfirm",
             "[JumpBack]DownloadConfirm",
             "[JumpBack]LoginConfirm",
             "[JumpBack]ClickHomeButton",
             "[JumpBack]SkipPlot",
             "[JumpBack]CloseSale",
-            "[JumpBack]RewardConfirm",
+            "[JumpBack]CommonConfirmReward",
             "ActiveCheck",
             "[JumpBack]ClickHall"
         ]
@@ -204,7 +204,7 @@
             }
         },
         "next": [
-            "PageClose"
+            "CommonClosePage"
         ]
     },
     "ClickHall": {
@@ -342,7 +342,7 @@
         },
         "next": [
             "LoginRewardClaimed",
-            "[JumpBack]RewardConfirm"
+            "[JumpBack]CommonConfirmReward"
         ]
     },
     "LoginRewardClaimed": {
@@ -420,7 +420,7 @@
         },
         "post_wait_freezes": 20
     },
-    "GoBack": {
+    "CommonGoBack": {
         "desc": "返回",
         "recognition": {
             "type": "OCR",

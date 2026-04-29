@@ -81,7 +81,7 @@
         "next": [
             "LargeEventMissionClaimed",
             "[JumpBack]LargeEventMissionClaimAll",
-            "[JumpBack]RewardConfirm",
+            "[JumpBack]CommonConfirmReward",
             "LargeEventMissionRedDot"
         ]
     },
@@ -110,7 +110,7 @@
             }
         },
         "next": [
-            "GoBack"
+            "CommonGoBack"
         ]
     },
     "LargeEventMissionClaimAll": {

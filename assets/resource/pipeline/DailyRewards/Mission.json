@@ -70,7 +70,7 @@
         "next": [
             "MissionClaimed",
             "[JumpBack]MissionClaimAll",
-            "[JumpBack]RewardConfirm",
+            "[JumpBack]CommonConfirmReward",
             "MissionRedDot"
         ]
     },
@@ -99,7 +99,7 @@
             }
         },
         "next": [
-            "PageClose"
+            "CommonClosePage"
         ]
     },
     "MissionClaimAll": {

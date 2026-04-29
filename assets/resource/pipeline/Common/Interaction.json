@@ -1,5 +1,5 @@
 {
-    "RewardConfirm": {
+    "CommonConfirmReward": {
         "desc": "奖励确认",
         "recognition": {
             "type": "OCR",
@@ -20,7 +20,7 @@
             "type": "Click"
         }
     },
-    "ActionConfirm": {
+    "CommonConfirmAction": {
         "desc": "操作确认",
         "recognition": {
             "type": "TemplateMatch",
@@ -41,7 +41,7 @@
         },
         "post_wait_freezes": 500
     },
-    "PageClose": {
+    "CommonClosePage": {
         "desc": "关闭页面",
         "recognition": {
             "type": "TemplateMatch",
@@ -65,7 +65,7 @@
             "type": "Click"
         }
     },
-    "ClickMax": {
+    "CommonClickMax": {
         "desc": "点击MAX",
         "recognition": {
             "type": "TemplateMatch",
@@ -85,7 +85,7 @@
             "type": "Click"
         }
     },
-    "BlankClick": {
+    "CommonClickBlank": {
         "desc": "点击空白",
         "action": {
             "type": "Click",

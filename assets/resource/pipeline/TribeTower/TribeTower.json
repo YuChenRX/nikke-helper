@@ -114,7 +114,7 @@
             "[JumpBack]StartBattle",
             "[JumpBack]CloseSale",
             "TowerTask",
-            "[JumpBack]GoBack"
+            "[JumpBack]CommonGoBack"
         ]
     },
     "EnterElysionTower": {

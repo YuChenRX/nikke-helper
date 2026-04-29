@@ -70,9 +70,9 @@
         },
         "next": [
             "PurchaseCheck",
-            "[JumpBack]ClickMax",
-            "[JumpBack]ActionConfirm",
-            "RewardConfirm"
+            "[JumpBack]CommonClickMax",
+            "[JumpBack]CommonConfirmAction",
+            "CommonConfirmReward"
         ]
     }
 }

@@ -62,7 +62,7 @@
             "[JumpBack]AdviseStory",
             "[JumpBack]PlayEpisode",
             "[JumpBack]EpisodeViewingReward",
-            "PageClose"
+            "CommonClosePage"
         ]
     },
     "PlayEpisode": {
@@ -105,8 +105,8 @@
             "type": "Click"
         },
         "next": [
-            "[JumpBack]RewardConfirm",
-            "PageClose"
+            "[JumpBack]CommonConfirmReward",
+            "CommonClosePage"
         ]
     }
 }

@@ -71,7 +71,7 @@
         "desc": "返回活动地区",
         "next": [
             "LargeEventEventFlag",
-            "[JumpBack]GoBack"
+            "[JumpBack]CommonGoBack"
         ]
     }
 }

@@ -71,7 +71,7 @@
             "type": "Click"
         },
         "next": [
-            "RewardConfirm"
+            "CommonConfirmReward"
         ]
     },
     "ChooseOrdinaryPackage": {
@@ -96,7 +96,7 @@
         },
         "next": [
             "[JumpBack]CashShopClickRedDot",
-            "[JumpBack]RewardConfirm",
+            "[JumpBack]CommonConfirmReward",
             "EndTask"
         ]
     },

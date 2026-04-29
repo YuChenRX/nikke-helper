@@ -37,7 +37,7 @@
         },
         "next": [
             "SendAndReceive",
-            "PageClose"
+            "CommonClosePage"
         ]
     },
     "SendAndReceive": {
@@ -93,7 +93,7 @@
         },
         "post_wait_freezes": 500,
         "next": [
-            "PageClose"
+            "CommonClosePage"
         ]
     }
 }

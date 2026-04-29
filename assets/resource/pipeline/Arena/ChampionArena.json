@@ -38,7 +38,7 @@
         "next": [
             "EnterCheer",
             "FlagInArena",
-            "[JumpBack]GoBack"
+            "[JumpBack]CommonGoBack"
         ]
     },
     "EnterCheer": {
@@ -172,7 +172,7 @@
             "type": "Click"
         },
         "next": [
-            "ActionConfirm"
+            "CommonConfirmAction"
         ]
     },
     "CheerUpRight": {
@@ -195,7 +195,7 @@
             "type": "Click"
         },
         "next": [
-            "ActionConfirm"
+            "CommonConfirmAction"
         ]
     },
     "ChampionArenaRedDot": {

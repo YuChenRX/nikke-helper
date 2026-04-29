@@ -42,9 +42,9 @@
         "next": [
             "[JumpBack]ClaimDefenseRewards",
             "[JumpBack]WipeOut",
-            "[JumpBack]RewardConfirm",
+            "[JumpBack]CommonConfirmReward",
             "FlagInOutpost",
-            "[JumpBack]GoBack"
+            "[JumpBack]CommonGoBack"
         ]
     },
     "ClaimDefenseRewards": {
@@ -109,7 +109,7 @@
         },
         "post_wait_freezes": 1000,
         "next": [
-            "[JumpBack]RewardConfirm",
+            "[JumpBack]CommonConfirmReward",
             "[JumpBack]CancelWipeOut",
             "EndTask"
         ]

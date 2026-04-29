@@ -32,7 +32,7 @@
             "EpisodeClick",
             "[JumpBack]EpisodeRewardScrollDown",
             "[JumpBack]EpisodeRedDot",
-            "PageClose"
+            "CommonClosePage"
         ]
     },
     "EpisodeClick": {
@@ -66,8 +66,8 @@
         "post_delay": 1000,
         "next": [
             "[JumpBack]AdviseStory",
-            "[JumpBack]RewardConfirm",
-            "PageClose"
+            "[JumpBack]CommonConfirmReward",
+            "CommonClosePage"
         ]
     },
     "EpisodeRewardScrollDown": {

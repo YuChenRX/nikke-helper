@@ -22,7 +22,7 @@
         },
         "next": [
             "LargeEventStoryEventPage",
-            "[JumpBack]BlankClick"
+            "[JumpBack]CommonClickBlank"
         ]
     },
     "LargeEventStoryEventPage": {
@@ -55,7 +55,7 @@
         },
         "next": [
             "LargeEventStoryEventPageRedDot",
-            "GoBack"
+            "CommonGoBack"
         ]
     },
     "LargeEventStoryEventPageRedDot": {

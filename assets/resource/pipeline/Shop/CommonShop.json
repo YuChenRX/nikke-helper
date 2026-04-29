@@ -160,7 +160,7 @@
             }
         },
         "next": [
-            "[JumpBack]PageClose",
+            "[JumpBack]CommonClosePage",
             "FreeReset",
             "EndTask"
         ]
