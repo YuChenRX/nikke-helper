@@ -3,7 +3,7 @@
         "desc": "大活动",
         "next": [
             "LargeEventEntry",
-            "[JumpBack]EnterHall"
+            "[JumpBack]NavigationEnterHall"
         ]
     },
     "LargeEventEntry": {

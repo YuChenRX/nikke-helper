@@ -3,7 +3,7 @@
         "desc": "每日奖励入口",
         "next": [
             "DailyRewardsStart",
-            "[JumpBack]EnterHall"
+            "[JumpBack]NavigationEnterHall"
         ]
     },
     "DailyRewardsStart": {

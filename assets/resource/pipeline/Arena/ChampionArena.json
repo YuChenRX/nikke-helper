@@ -1,5 +1,5 @@
 {
-    "EnterChampionArena": {
+    "ArenaEnterChampionArena": {
         "max_hit": 5,
         "desc": "进入冠军竞技场",
         "recognition": {
@@ -36,12 +36,12 @@
         },
         "post_wait_freezes": 500,
         "next": [
-            "EnterCheer",
+            "ArenaEnterCheer",
             "FlagInArena",
             "[JumpBack]CommonGoBack"
         ]
     },
-    "EnterCheer": {
+    "ArenaEnterCheer": {
         "desc": "进入应援",
         "recognition": {
             "type": "OCR",

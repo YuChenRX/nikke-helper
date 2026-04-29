@@ -1,11 +1,11 @@
 {
     "Shop": {
         "next": [
-            "EnterShop",
-            "[JumpBack]EnterHall"
+            "HallEnterShop",
+            "[JumpBack]NavigationEnterHall"
         ]
     },
-    "EnterShop": {
+    "HallEnterShop": {
         "desc": "进入商店",
         "recognition": {
             "type": "OCR",
@@ -26,7 +26,7 @@
         },
         "next": [
             "FlagInShop",
-            "EnterShop"
+            "HallEnterShop"
         ]
     },
     "FlagInShop": {

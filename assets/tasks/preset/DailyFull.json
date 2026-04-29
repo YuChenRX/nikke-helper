@@ -32,19 +32,19 @@
                     "name": "Arena",
                     "option": {
                         "SpecialReward": "Yes",
-                        "EnterRookieArena": "Yes",
-                        "EnterSpecialArena": "Yes",
-                        "EnterChampionArena": "Yes"
+                        "ArenaEnterRookieArena": "Yes",
+                        "ArenaEnterSpecialArena": "Yes",
+                        "ArenaEnterChampionArena": "Yes"
                     }
                 },
                 {
                     "name": "TribeTower",
                     "option": {
-                        "EnterCommonTower": "No",
-                        "EnterElysionTower": "Yes",
-                        "EnterMissilisTower": "Yes",
-                        "EnterTetraTower": "Yes",
-                        "EnterPilgrimTower": "Yes"
+                        "TribeTowerEnterCommonTower": "No",
+                        "TribeTowerEnterElysionTower": "Yes",
+                        "TribeTowerEnterMissilisTower": "Yes",
+                        "TribeTowerEnterTetraTower": "Yes",
+                        "TribeTowerEnterPilgrimTower": "Yes"
                     }
                 },
                 {

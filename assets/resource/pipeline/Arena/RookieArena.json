@@ -1,5 +1,5 @@
 {
-    "EnterRookieArena": {
+    "ArenaEnterRookieArena": {
         "max_hit": 5,
         "desc": "进入新人竞技场",
         "recognition": {

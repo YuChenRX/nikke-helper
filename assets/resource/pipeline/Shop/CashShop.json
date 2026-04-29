@@ -1,11 +1,11 @@
 {
     "CashShop": {
         "next": [
-            "EnterCashShop",
-            "[JumpBack]EnterHall"
+            "HallEnterCashShop",
+            "[JumpBack]NavigationEnterHall"
         ]
     },
-    "EnterCashShop": {
+    "HallEnterCashShop": {
         "desc": "进入付费商店",
         "recognition": {
             "type": "OCR",
@@ -26,7 +26,7 @@
         },
         "next": [
             "FlagInCashShop",
-            "EnterCashShop"
+            "HallEnterCashShop"
         ]
     },
     "FlagInCashShop": {

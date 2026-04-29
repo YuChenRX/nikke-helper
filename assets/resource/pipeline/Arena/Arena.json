@@ -2,8 +2,8 @@
     "Arena": {
         "next": [
             "[JumpBack]SpecialReward",
-            "EnterArena",
-            "[JumpBack]EnterArk"
+            "ArkEnterArena",
+            "[JumpBack]HallEnterArk"
         ]
     },
     "SpecialReward": {
@@ -32,7 +32,7 @@
             "EndTask"
         ]
     },
-    "EnterArena": {
+    "ArkEnterArena": {
         "desc": "进入竞技场",
         "recognition": {
             "type": "OCR",
@@ -54,7 +54,7 @@
         "post_wait_freezes": 1000,
         "next": [
             "FlagInArena",
-            "EnterArena"
+            "ArkEnterArena"
         ]
     },
     "FlagInArena": {
@@ -74,9 +74,9 @@
             }
         },
         "next": [
-            "EnterRookieArena",
-            "EnterSpecialArena",
-            "EnterChampionArena",
+            "ArenaEnterRookieArena",
+            "ArenaEnterSpecialArena",
+            "ArenaEnterChampionArena",
             "EndTask"
         ]
     }

@@ -1,11 +1,11 @@
 {
     "Interception": {
         "next": [
-            "EnterInterception",
-            "[JumpBack]EnterArk"
+            "ArkEnterInterception",
+            "[JumpBack]HallEnterArk"
         ]
     },
-    "EnterInterception": {
+    "ArkEnterInterception": {
         "desc": "进入拦截战",
         "recognition": {
             "type": "OCR",
@@ -27,7 +27,7 @@
         "post_wait_freezes": 1000,
         "next": [
             "FlagInInterception",
-            "EnterInterception"
+            "ArkEnterInterception"
         ]
     },
     "FlagInInterception": {

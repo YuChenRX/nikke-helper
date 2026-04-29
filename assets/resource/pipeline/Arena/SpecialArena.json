@@ -1,5 +1,5 @@
 {
-    "EnterSpecialArena": {
+    "ArenaEnterSpecialArena": {
         "max_hit": 5,
         "desc": "进入特殊竞技场",
         "recognition": {

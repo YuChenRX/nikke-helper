@@ -6,11 +6,11 @@
             "entry": "TribeTower",
             "description": "$task.TribeTower.description",
             "option": [
-                "EnterCommonTower",
-                "EnterElysionTower",
-                "EnterMissilisTower",
-                "EnterTetraTower",
-                "EnterPilgrimTower"
+                "TribeTowerEnterCommonTower",
+                "TribeTowerEnterElysionTower",
+                "TribeTowerEnterMissilisTower",
+                "TribeTowerEnterTetraTower",
+                "TribeTowerEnterPilgrimTower"
             ],
             "group": [
                 "daily"
@@ -18,15 +18,15 @@
         }
     ],
     "option": {
-        "EnterCommonTower": {
+        "TribeTowerEnterCommonTower": {
             "type": "switch",
-            "label": "$option.EnterCommonTower.label",
-            "description": "$task.EnterCommonTower.Description",
+            "label": "$option.TribeTowerEnterCommonTower.label",
+            "description": "$task.TribeTowerEnterCommonTower.Description",
             "cases": [
                 {
                     "name": "No",
                     "pipeline_override": {
-                        "EnterCommonTower": {
+                        "TribeTowerEnterCommonTower": {
                             "enabled": false
                         }
                     }
@@ -34,21 +34,21 @@
                 {
                     "name": "Yes",
                     "pipeline_override": {
-                        "EnterCommonTower": {
+                        "TribeTowerEnterCommonTower": {
                             "enabled": true
                         }
                     }
                 }
             ]
         },
-        "EnterElysionTower": {
+        "TribeTowerEnterElysionTower": {
             "type": "switch",
-            "label": "$option.EnterElysionTower.label",
+            "label": "$option.TribeTowerEnterElysionTower.label",
             "cases": [
                 {
                     "name": "Yes",
                     "pipeline_override": {
-                        "EnterElysionTower": {
+                        "TribeTowerEnterElysionTower": {
                             "enabled": true
                         }
                     }
@@ -56,21 +56,21 @@
                 {
                     "name": "No",
                     "pipeline_override": {
-                        "EnterElysionTower": {
+                        "TribeTowerEnterElysionTower": {
                             "enabled": false
                         }
                     }
                 }
             ]
         },
-        "EnterMissilisTower": {
+        "TribeTowerEnterMissilisTower": {
             "type": "switch",
-            "label": "$option.EnterMissilisTower.label",
+            "label": "$option.TribeTowerEnterMissilisTower.label",
             "cases": [
                 {
                     "name": "Yes",
                     "pipeline_override": {
-                        "EnterMissilisTower": {
+                        "TribeTowerEnterMissilisTower": {
                             "enabled": true
                         }
                     }
@@ -78,21 +78,21 @@
                 {
                     "name": "No",
                     "pipeline_override": {
-                        "EnterMissilisTower": {
+                        "TribeTowerEnterMissilisTower": {
                             "enabled": false
                         }
                     }
                 }
             ]
         },
-        "EnterTetraTower": {
+        "TribeTowerEnterTetraTower": {
             "type": "switch",
-            "label": "$option.EnterTetraTower.label",
+            "label": "$option.TribeTowerEnterTetraTower.label",
             "cases": [
                 {
                     "name": "Yes",
                     "pipeline_override": {
-                        "EnterTetraTower": {
+                        "TribeTowerEnterTetraTower": {
                             "enabled": true
                         }
                     }
@@ -100,21 +100,21 @@
                 {
                     "name": "No",
                     "pipeline_override": {
-                        "EnterTetraTower": {
+                        "TribeTowerEnterTetraTower": {
                             "enabled": false
                         }
                     }
                 }
             ]
         },
-        "EnterPilgrimTower": {
+        "TribeTowerEnterPilgrimTower": {
             "type": "switch",
-            "label": "$option.EnterPilgrimTower.label",
+            "label": "$option.TribeTowerEnterPilgrimTower.label",
             "cases": [
                 {
                     "name": "Yes",
                     "pipeline_override": {
-                        "EnterPilgrimTower": {
+                        "TribeTowerEnterPilgrimTower": {
                             "enabled": true
                         }
                     }
@@ -122,7 +122,7 @@
                 {
                     "name": "No",
                     "pipeline_override": {
-                        "EnterPilgrimTower": {
+                        "TribeTowerEnterPilgrimTower": {
                             "enabled": false
                         }
                     }

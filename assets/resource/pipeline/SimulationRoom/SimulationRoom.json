@@ -2,7 +2,7 @@
     "SimulationRoomMain": {
         "next": [
             "SimulationRoomEnter",
-            "[JumpBack]EnterArk"
+            "[JumpBack]HallEnterArk"
         ]
     },
     "SimulationRoomEnter": {

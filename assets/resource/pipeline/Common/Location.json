@@ -1,5 +1,5 @@
 {
-    "EnterHall": {
+    "NavigationEnterHall": {
         "desc": "进入大厅",
         "anchor": "NeedCheck",
         "timeout": 120000,
@@ -227,12 +227,12 @@
             "type": "Click"
         }
     },
-    "EnterArk": {
+    "HallEnterArk": {
         "desc": "进入方舟",
         "next": [
             "FlagInArk",
             "ClickArk",
-            "[JumpBack]EnterHall"
+            "[JumpBack]NavigationEnterHall"
         ]
     },
     "FlagInArk": {

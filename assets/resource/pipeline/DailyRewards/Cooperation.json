@@ -4,7 +4,7 @@
         "max_hit": 1,
         "next": [
             "CooperationStart",
-            "[JumpBack]EnterHall"
+            "[JumpBack]NavigationEnterHall"
         ]
     },
     "CooperationStart": {
@@ -72,7 +72,7 @@
             }
         },
         "next": [
-            "EnterHall"
+            "NavigationEnterHall"
         ]
     },
     "SlideBanner": {

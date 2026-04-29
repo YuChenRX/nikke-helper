@@ -1,11 +1,11 @@
 {
     "Outpost": {
         "next": [
-            "EnterOutpost",
-            "[JumpBack]EnterHall"
+            "HallEnterOutpost",
+            "[JumpBack]NavigationEnterHall"
         ]
     },
-    "EnterOutpost": {
+    "HallEnterOutpost": {
         "desc": "进入前哨基地",
         "recognition": {
             "type": "OCR",
@@ -26,7 +26,7 @@
         },
         "next": [
             "OutpostTask",
-            "EnterOutpost"
+            "HallEnterOutpost"
         ]
     },
     "OutpostTask": {

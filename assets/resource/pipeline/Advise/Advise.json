@@ -1,11 +1,11 @@
 {
     "Advise": {
         "next": [
-            "EnterNikke",
-            "[JumpBack]EnterHall"
+            "HallEnterNikke",
+            "[JumpBack]NavigationEnterHall"
         ]
     },
-    "EnterNikke": {
+    "HallEnterNikke": {
         "desc": "进入妮姬界面",
         "recognition": {
             "type": "TemplateMatch",
@@ -34,12 +34,12 @@
         },
         "post_wait_freezes": 500,
         "next": [
-            "EnterAdvise",
+            "NikkeEnterAdvise",
             "[JumpBack]FlagInNikke",
-            "EnterNikke"
+            "HallEnterNikke"
         ]
     },
-    "EnterAdvise": {
+    "NikkeEnterAdvise": {
         "desc": "进入咨询界面",
         "recognition": {
             "type": "OCR",
@@ -63,7 +63,7 @@
             "[JumpBack]EpisodeViewing",
             "ChooseNikke",
             "[JumpBack]FlagInAdvise",
-            "EnterAdvise"
+            "NikkeEnterAdvise"
         ]
     },
     "ChooseNikke": {

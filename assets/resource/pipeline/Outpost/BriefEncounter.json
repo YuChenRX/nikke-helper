@@ -3,11 +3,11 @@
         "desc": "突发活动",
         "max_hit": 1,
         "next": [
-            "EnterBriefEncounter",
+            "OutpostEnterBriefEncounter",
             "EndTask"
         ]
     },
-    "EnterBriefEncounter": {
+    "OutpostEnterBriefEncounter": {
         "desc": "进入突发活动",
         "recognition": {
             "type": "OCR",
@@ -29,7 +29,7 @@
         "post_wait_freezes": 500,
         "next": [
             "DailyLives",
-            "EnterBriefEncounter",
+            "OutpostEnterBriefEncounter",
             "EndTask"
         ]
     },
@@ -53,10 +53,10 @@
             "type": "Click"
         },
         "next": [
-            "EnterDailyEvent"
+            "OutpostEnterDailyEvent"
         ]
     },
-    "EnterDailyEvent": {
+    "OutpostEnterDailyEvent": {
         "desc": "进入活动",
         "recognition": {
             "type": "TemplateMatch",
@@ -76,11 +76,11 @@
             "type": "Click"
         },
         "next": [
-            "EnterDailyEvent",
+            "OutpostEnterDailyEvent",
             "[JumpBack]CommonConfirmAction",
             "[JumpBack]SkipStory",
             "[JumpBack]CommonConfirmReward",
-            "EnterBriefEncounter"
+            "OutpostEnterBriefEncounter"
         ]
     }
 }

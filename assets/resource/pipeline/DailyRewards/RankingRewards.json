@@ -43,7 +43,7 @@
         },
         "next": [
             "RankingRewardReddotInArk",
-            "EnterHall"
+            "NavigationEnterHall"
         ]
     },
     "RankingRewardReddotInArk": {
@@ -98,7 +98,7 @@
             "type": "Click"
         },
         "next": [
-            "EnterHall"
+            "NavigationEnterHall"
         ]
     }
 }

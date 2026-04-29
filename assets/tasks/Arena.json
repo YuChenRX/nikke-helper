@@ -7,9 +7,9 @@
             "description": "$task.Arena.description",
             "option": [
                 "SpecialReward",
-                "EnterRookieArena",
-                "EnterSpecialArena",
-                "EnterChampionArena"
+                "ArenaEnterRookieArena",
+                "ArenaEnterSpecialArena",
+                "ArenaEnterChampionArena"
             ],
             "group": [
                 "daily"
@@ -39,14 +39,14 @@
                 }
             ]
         },
-        "EnterRookieArena": {
+        "ArenaEnterRookieArena": {
             "type": "switch",
-            "label": "$option.EnterRookieArena.label",
+            "label": "$option.ArenaEnterRookieArena.label",
             "cases": [
                 {
                     "name": "Yes",
                     "pipeline_override": {
-                        "EnterRookieArena": {
+                        "ArenaEnterRookieArena": {
                             "enabled": true
                         }
                     }
@@ -54,21 +54,21 @@
                 {
                     "name": "No",
                     "pipeline_override": {
-                        "EnterRookieArena": {
+                        "ArenaEnterRookieArena": {
                             "enabled": false
                         }
                     }
                 }
             ]
         },
-        "EnterSpecialArena": {
+        "ArenaEnterSpecialArena": {
             "type": "switch",
-            "label": "$option.EnterSpecialArena.label",
+            "label": "$option.ArenaEnterSpecialArena.label",
             "cases": [
                 {
                     "name": "Yes",
                     "pipeline_override": {
-                        "EnterSpecialArena": {
+                        "ArenaEnterSpecialArena": {
                             "enabled": true
                         }
                     }
@@ -76,21 +76,21 @@
                 {
                     "name": "No",
                     "pipeline_override": {
-                        "EnterSpecialArena": {
+                        "ArenaEnterSpecialArena": {
                             "enabled": false
                         }
                     }
                 }
             ]
         },
-        "EnterChampionArena": {
+        "ArenaEnterChampionArena": {
             "type": "switch",
-            "label": "$option.EnterChampionArena.label",
+            "label": "$option.ArenaEnterChampionArena.label",
             "cases": [
                 {
                     "name": "Yes",
                     "pipeline_override": {
-                        "EnterChampionArena": {
+                        "ArenaEnterChampionArena": {
                             "enabled": true
                         }
                     }
@@ -98,7 +98,7 @@
                 {
                     "name": "No",
                     "pipeline_override": {
-                        "EnterChampionArena": {
+                        "ArenaEnterChampionArena": {
                             "enabled": false
                         }
                     }
