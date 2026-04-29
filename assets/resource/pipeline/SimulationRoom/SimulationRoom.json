@@ -26,7 +26,7 @@
         },
         "next": [
             "[JumpBack]SimulationRoomConfirmBiosUpdate",
-            "SimulationRoomOnMainPage",
+            "SimulationRoomCornerVisible",
             "SimulationRoomEnter"
         ]
     },
@@ -50,7 +50,7 @@
             "type": "Click"
         }
     },
-    "SimulationRoomOnMainPage": {
+    "SimulationRoomCornerVisible": {
         "desc": "处于模拟室",
         "recognition": {
             "type": "OCR",

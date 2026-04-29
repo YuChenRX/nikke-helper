@@ -35,11 +35,11 @@
             "type": "Click"
         },
         "next": [
-            "FlagInArenaShop",
+            "ArenaShopVisible",
             "ShopEnterArenaShop"
         ]
     },
-    "FlagInArenaShop": {
+    "ArenaShopVisible": {
         "desc": "处于竞技场商店",
         "recognition": {
             "type": "OCR",

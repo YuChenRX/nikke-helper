@@ -25,11 +25,11 @@
             "type": "Click"
         },
         "next": [
-            "FlagInShop",
+            "ShopCornerVisible",
             "HallEnterShop"
         ]
     },
-    "FlagInShop": {
+    "ShopCornerVisible": {
         "desc": "处于百货商店",
         "recognition": {
             "type": "OCR",

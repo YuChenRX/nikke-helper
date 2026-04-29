@@ -53,11 +53,11 @@
         },
         "post_wait_freezes": 1000,
         "next": [
-            "FlagInArena",
+            "ArenaCornerVisible",
             "ArkEnterArena"
         ]
     },
-    "FlagInArena": {
+    "ArenaCornerVisible": {
         "desc": "处于竞技场",
         "recognition": {
             "type": "OCR",

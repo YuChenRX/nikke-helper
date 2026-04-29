@@ -230,21 +230,21 @@
     "HallEnterArk": {
         "desc": "进入方舟",
         "next": [
-            "FlagInArk",
+            "ArkCornerVisible",
             "ClickArk",
             "[JumpBack]NavigationEnterHall"
         ]
     },
-    "FlagInArk": {
+    "ArkCornerVisible": {
         "desc": "处于方舟内部",
         "recognition": {
             "type": "OCR",
             "param": {
                 "roi": [
-                    17,
-                    16,
-                    50,
-                    20
+                    0,
+                    15,
+                    70,
+                    25
                 ],
                 "expected": [
                     "方舟"
@@ -266,7 +266,7 @@
             "type": "Click"
         },
         "next": [
-            "FlagInArk",
+            "ArkCornerVisible",
             "ClickArk"
         ]
     },

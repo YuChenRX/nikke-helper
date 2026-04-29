@@ -26,11 +26,11 @@
         },
         "post_wait_freezes": 1000,
         "next": [
-            "FlagInInterception",
+            "InterceptionCornerVisible",
             "ArkEnterInterception"
         ]
     },
-    "FlagInInterception": {
+    "InterceptionCornerVisible": {
         "desc": "处于拦截战",
         "recognition": {
             "type": "OCR",

@@ -15,10 +15,10 @@
             "type": "Click"
         },
         "next": [
-            "FlagInSpecialArena"
+            "SpecialArenaCornerVisible"
         ]
     },
-    "FlagInSpecialArena": {
+    "SpecialArenaCornerVisible": {
         "desc": "处于特殊竞技场",
         "recognition": {
             "type": "OCR",
@@ -36,7 +36,7 @@
         },
         "next": [
             "[JumpBack]FreeBattle",
-            "FlagInArena",
+            "ArenaCornerVisible",
             "[JumpBack]CommonGoBack"
         ]
     },

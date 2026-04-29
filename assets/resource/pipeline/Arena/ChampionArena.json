@@ -15,10 +15,10 @@
             "type": "Click"
         },
         "next": [
-            "FlagInChampionArena"
+            "ChampionArenaCornerVisible"
         ]
     },
-    "FlagInChampionArena": {
+    "ChampionArenaCornerVisible": {
         "desc": "处于冠军竞技场",
         "recognition": {
             "type": "OCR",
@@ -36,12 +36,12 @@
         },
         "post_wait_freezes": 500,
         "next": [
-            "ArenaEnterCheer",
-            "FlagInArena",
+            "ChampionArenaEnterChampionsDuel",
+            "ArenaCornerVisible",
             "[JumpBack]CommonGoBack"
         ]
     },
-    "ArenaEnterCheer": {
+    "ChampionArenaEnterChampionsDuel": {
         "desc": "进入应援",
         "recognition": {
             "type": "OCR",
@@ -62,7 +62,7 @@
         },
         "next": [
             "[JumpBack]CheerReward",
-            "MatchFlag"
+            "CompetitionNameCornerVisible"
         ]
     },
     "CheerReward": {
@@ -85,7 +85,7 @@
             "type": "Click"
         }
     },
-    "MatchFlag": {
+    "CompetitionNameCornerVisible": {
         "desc": "比赛的标识",
         "recognition": {
             "type": "OCR",

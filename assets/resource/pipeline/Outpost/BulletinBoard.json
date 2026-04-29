@@ -50,7 +50,7 @@
         "next": [
             "[JumpBack]BulletinBoardClaim",
             "[JumpBack]BulletinBoardDispatch",
-            "FlagInOutpost",
+            "OutpostOnMainPage",
             "[JumpBack]CommonGoBack"
         ]
     },

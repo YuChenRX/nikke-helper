@@ -36,7 +36,7 @@
             "type": "And",
             "param": {
                 "all_of": [
-                    "FlagInTower1"
+                    "TribeTowerVisible"
                 ]
             }
         },
@@ -249,7 +249,7 @@
             "TowerBattle1"
         ]
     },
-    "FlagInTower1": {
+    "TribeTowerVisible": {
         "desc": "处于无限之塔1级页面",
         "recognition": {
             "type": "OCR",
@@ -266,7 +266,7 @@
             }
         }
     },
-    "FlagInTower2": {
+    "TribeTowerStagePageVisible": {
         "desc": "处于无限之塔2级页面",
         "recognition": {
             "type": "OCR",

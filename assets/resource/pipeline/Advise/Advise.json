@@ -35,7 +35,7 @@
         "post_wait_freezes": 500,
         "next": [
             "NikkeEnterAdvise",
-            "[JumpBack]FlagInNikke",
+            "[JumpBack]NikkeCornerVisible",
             "HallEnterNikke"
         ]
     },
@@ -62,7 +62,7 @@
         "next": [
             "[JumpBack]EpisodeViewing",
             "ChooseNikke",
-            "[JumpBack]FlagInAdvise",
+            "[JumpBack]AdviseCornerVisible",
             "NikkeEnterAdvise"
         ]
     },
@@ -90,7 +90,7 @@
             "AdviseStart"
         ]
     },
-    "FlagInAdvise": {
+    "AdviseCornerVisible": {
         "desc": "咨询界面的标识",
         "recognition": {
             "type": "OCR",
@@ -107,7 +107,7 @@
             }
         }
     },
-    "FlagInNikke": {
+    "NikkeCornerVisible": {
         "desc": "进入妮姬界面",
         "recognition": {
             "type": "OCR",

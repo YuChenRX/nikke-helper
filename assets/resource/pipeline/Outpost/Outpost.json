@@ -35,7 +35,7 @@
             "type": "And",
             "param": {
                 "all_of": [
-                    "FlagInOutpost"
+                    "OutpostOnMainPage"
                 ]
             }
         },
@@ -46,7 +46,7 @@
             "EndTask"
         ]
     },
-    "FlagInOutpost": {
+    "OutpostOnMainPage": {
         "desc": "前哨基地的标识",
         "recognition": {
             "type": "OCR",

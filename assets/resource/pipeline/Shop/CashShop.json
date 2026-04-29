@@ -25,11 +25,11 @@
             "type": "Click"
         },
         "next": [
-            "FlagInCashShop",
+            "CashShopCornerVisible",
             "HallEnterCashShop"
         ]
     },
-    "FlagInCashShop": {
+    "CashShopCornerVisible": {
         "desc": "处于付费商店",
         "recognition": {
             "type": "OCR",
