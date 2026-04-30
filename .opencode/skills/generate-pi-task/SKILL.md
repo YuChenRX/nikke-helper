@@ -27,7 +27,7 @@ Use this skill when:
 
 ### Step 1: Read Specifications
 
-Read these files from `deps/tools/`:
+Read these files from `tools/schema/`:
 
 1. **`interface_import.schema.json`** — THE schema for task files (top-level: `task[]`, `option{}`, `preset[]`)
 2. **`interface.schema.json`** — Main PI schema (for understanding import/group/controller/resource context)
