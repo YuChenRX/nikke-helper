@@ -149,7 +149,8 @@
         "desc": "领取Pass奖励流程",
         "next": [
             "[JumpBack]DailyRewardsPassClaimAll",
-            "CommonConfirmReward"
+            "CommonConfirmReward",
+            "CommonEndTask"
         ]
     },
     "DailyRewardsPassClaimed": {
@@ -195,6 +196,7 @@
         },
         "action": {
             "type": "Click"
-        }
+        },
+        "post_wait_freezes": 500
     }
 }
