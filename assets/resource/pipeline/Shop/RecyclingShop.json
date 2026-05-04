@@ -149,7 +149,14 @@
                     1222,
                     325
                 ],
-                "template": "Shop/Voucher.png",
+                "template": [
+                    "Shop/Darlingforaday.png",
+                    "Shop/ElysionVIPBuffetVoucher.png",
+                    "Shop/MissilisVIPCard.png",
+                    "Shop/TetraVIPSpaVoucher.png",
+                    "Shop/PilgrimSupplySetVoucher.png",
+                    "Shop/AbnormalAnnualTicket.png"
+                ],
                 "threshold": 0.9
             }
         },
