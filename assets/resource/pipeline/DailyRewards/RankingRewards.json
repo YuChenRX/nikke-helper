@@ -22,7 +22,8 @@
             "type": "Click"
         },
         "next": [
-            "DailyRewardsRankingRewardFlow"
+            "DailyRewardsRankingRewardFlow",
+            "DailyRewardsRankingRewardsStart"
         ]
     },
     "DailyRewardsRankingRewardVisible": {
