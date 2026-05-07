@@ -181,6 +181,22 @@
     "DailyRewardsPassClaimAll": {
         "desc": "领取所有Pass奖励",
         "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "DailyRewardsPassTextVisible",
+                    "DailyRewardsPassAvailable"
+                ]
+            }
+        },
+        "action": {
+            "type": "Click"
+        },
+        "post_wait_freezes": 500
+    },
+    "DailyRewardsPassTextVisible": {
+        "desc": "Pass文本可见",
+        "recognition": {
             "type": "OCR",
             "param": {
                 "roi": [
@@ -190,7 +206,7 @@
                     30
                 ],
                 "expected": [
-                    "全部领取"
+                    ".*全部.*"
                 ]
             }
         },
@@ -198,5 +214,30 @@
             "type": "Click"
         },
         "post_wait_freezes": 500
+    },
+    "DailyRewardsPassAvailable": {
+        "desc": "Pass可用",
+        "recognition": {
+            "type": "ColorMatch",
+            "param": {
+                "roi": [
+                    553,
+                    652,
+                    172,
+                    26
+                ],
+                "lower": [
+                    200,
+                    200,
+                    200
+                ],
+                "upper": [
+                    255,
+                    255,
+                    255
+                ],
+                "count": 100
+            }
+        }
     }
 }
