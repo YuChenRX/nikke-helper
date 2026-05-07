@@ -32,6 +32,7 @@
             "AdviseClickEpisode",
             "[JumpBack]AdviseEpisodeRewardScrollDown",
             "[JumpBack]AdviseEpisodeRedDotVisible",
+            "AdviseClickAdviceCollection",
             "CommonClosePage"
         ]
     },
@@ -66,6 +67,72 @@
         "post_wait_freezes": 2500,
         "next": [
             "[JumpBack]AdviseStory",
+            "[JumpBack]CommonConfirmReward",
+            "CommonClosePage"
+        ]
+    },
+    "AdviseClickAdviceCollection": {
+        "desc": "点击咨询图鉴",
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [
+                    778,
+                    86,
+                    34,
+                    34
+                ],
+                "template": [
+                    "Common/RedDot.png"
+                ],
+                "threshold": 0.8
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target_offset": [
+                    -30,
+                    30,
+                    0,
+                    0
+                ]
+            }
+        },
+        "next": [
+            "AdviseClickBadgeStickerReward"
+        ]
+    },
+    "AdviseClickBadgeStickerReward": {
+        "desc": "点击徽章贴纸奖励",
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [
+                    791,
+                    594,
+                    28,
+                    25
+                ],
+                "template": [
+                    "Common/RedDot.png"
+                ],
+                "threshold": 0.8
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target_offset": [
+                    -30,
+                    30,
+                    0,
+                    0
+                ]
+            }
+        },
+        "post_wait_freezes": 1000,
+        "next": [
             "[JumpBack]CommonConfirmReward",
             "CommonClosePage"
         ]
