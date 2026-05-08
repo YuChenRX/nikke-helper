@@ -16,8 +16,6 @@ type MembershipCheckAction struct{}
 var _ maa.CustomActionRunner = &MembershipCheckAction{}
 
 func (a *MembershipCheckAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
-	entry := arg.CurrentTaskName
-
 	status := GetMembershipStatus()
 
 	if status.UnsupportedTier {
@@ -52,22 +50,6 @@ func (a *MembershipCheckAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) 
 		i18n.T("tasker.membership_check.denied"),
 		sponsorURL,
 	))
-	maafocus.PrintLargeContentTrimNewline(
-		i18n.RenderHTML("tasker.membership_warning", buildWarningData(status, entry)),
-	)
 
 	return false
-}
-
-func buildWarningData(status *MembershipStatus, entry string) map[string]any {
-	tierDisplay := status.MembershipType
-	if tierDisplay == "" || tierDisplay == "普通用户" {
-		tierDisplay = i18n.T("tasker.membership_warning.tier_free")
-	}
-
-	return map[string]any{
-		"CurrentTier": tierDisplay,
-		"TaskEntry":   entry,
-		"MinLevel":    fmt.Sprintf("%d", minMemberLevel),
-	}
 }
