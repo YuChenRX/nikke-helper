@@ -2,6 +2,7 @@
     "LargeEventMission": {
         "max_hit": 1,
         "desc": "大活动任务",
+        "enabled": false,
         "recognition": {
             "type": "TemplateMatch",
             "param": {

@@ -2,6 +2,7 @@
     "LargeEventChallenge": {
         "max_hit": 1,
         "desc": "大活动挑战",
+        "enabled": false,
         "recognition": {
             "type": "OCR",
             "param": {
