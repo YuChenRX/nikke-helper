@@ -1,6 +1,6 @@
 {
-    "AdviseStart": {
-        "desc": "开始咨询",
+    "AdviseFlow": {
+        "desc": "开始咨询流程",
         "next": [
             "AdviseAttemptsExhausted",
             "AdviseCollectionCompletedFlow",
@@ -217,7 +217,7 @@
         },
         "post_wait_freezes": 200,
         "next": [
-            "AdviseStart"
+            "AdviseFlow"
         ]
     },
     "AdviseCollectionNotCompletedFlow": {
