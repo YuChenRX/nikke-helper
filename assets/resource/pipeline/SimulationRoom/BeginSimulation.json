@@ -12,11 +12,20 @@
             }
         },
         "action": {
-            "type": "Click"
+            "type": "Click",
+            "param": {
+                "target_offset": [
+                    -20,
+                    20,
+                    0,
+                    0
+                ]
+            }
         },
         "next": [
             "[JumpBack]SimulationRoomClaimImmediately",
-            "SimulationRoomQuickSimulation"
+            "SimulationRoomQuickSimulation",
+            "SimulationRoomBeginSimulation"
         ]
     },
     "SimulationRoomClaimImmediately": {
