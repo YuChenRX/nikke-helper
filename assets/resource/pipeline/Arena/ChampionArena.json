@@ -127,8 +127,29 @@
             }
         },
         "next": [
-            "ArenaClickCheerUp"
+            "ArenaClickCheerUp",
+            "[JumpBack]ArenaCheerResult"
         ]
+    },
+    "ArenaCheerResult": {
+        "desc": "应援结果确认",
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [
+                    603,
+                    240,
+                    73,
+                    21
+                ],
+                "expected": [
+                    ".*应援.*"
+                ]
+            }
+        },
+        "action": {
+            "type": "Click"
+        }
     },
     "ArenaClickCheerUp": {
         "desc": "应援",
