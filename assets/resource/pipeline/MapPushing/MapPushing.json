@@ -1,6 +1,12 @@
 {
     "MapPushingFlow": {
         "desc": "推图流程",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "MembershipCheck"
+            }
+        },
         "next": [
             "[JumpBack]BattleStart",
             "[JumpBack]MapPushingMonsterClick",
