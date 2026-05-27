@@ -1,6 +1,7 @@
 {
     "plugins": [
-        "prettier-plugin-multiline-arrays"
+        "prettier-plugin-multiline-arrays",
+        "@nekosu/prettier-plugin-maafw-sort"
     ],
     "multilineArraysWrapThreshold": 1,
     "tabWidth": 4,
