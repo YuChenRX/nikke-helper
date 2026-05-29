@@ -261,6 +261,22 @@ func TestOldQuotaStateFallsBackToCurrentLimit(t *testing.T) {
 	}
 }
 
+func TestAddQuotaUsageUsesBillableDuration(t *testing.T) {
+	isolateQuotaState(t)
+	status := testStatus(10, "device-a")
+
+	snapshot, err := AddQuotaUsage(status, 2*time.Minute)
+	if err != nil {
+		t.Fatalf("AddQuotaUsage() failed: %v", err)
+	}
+	if snapshot.UsedSeconds != 120 {
+		t.Fatalf("UsedSeconds = %d, want 120", snapshot.UsedSeconds)
+	}
+	if snapshot.RemainingSeconds != 480 {
+		t.Fatalf("RemainingSeconds = %d, want 480", snapshot.RemainingSeconds)
+	}
+}
+
 func TestNextQuotaTickInterval(t *testing.T) {
 	cases := map[int64]time.Duration{
 		0:   quotaTickMinInterval,

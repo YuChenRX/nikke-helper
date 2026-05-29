@@ -228,6 +228,17 @@ func AddQuotaUsage(status *MembershipStatus, delta time.Duration) (QuotaSnapshot
 	if delta <= 0 {
 		return GetQuotaSnapshot(status)
 	}
+	seconds := int64(delta.Round(time.Second) / time.Second)
+	if seconds <= 0 {
+		seconds = 1
+	}
+	return AddQuotaUsageSeconds(status, seconds)
+}
+
+func AddQuotaUsageSeconds(status *MembershipStatus, seconds int64) (QuotaSnapshot, error) {
+	if seconds <= 0 {
+		return GetQuotaSnapshot(status)
+	}
 	quotaMu.Lock()
 	defer quotaMu.Unlock()
 	now := time.Now()
@@ -236,10 +247,6 @@ func AddQuotaUsage(status *MembershipStatus, delta time.Duration) (QuotaSnapshot
 		return QuotaSnapshot{}, err
 	}
 	if isRuntimeQuotaSubject(status) {
-		seconds := int64(delta.Round(time.Second) / time.Second)
-		if seconds <= 0 {
-			seconds = 1
-		}
 		state.UsedSeconds += seconds
 		state.UpdatedAt = now.Format(time.RFC3339)
 	}
