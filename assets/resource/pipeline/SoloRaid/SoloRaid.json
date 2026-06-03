@@ -24,11 +24,11 @@
             }
         },
         "next": [
-            "SoloRaidClick",
+            "SoloRaidClickEntry",
             "CommonEndTask"
         ]
     },
-    "SoloRaidClick": {
+    "SoloRaidClickEntry": {
         "desc": "点击单人突击",
         "recognition": {
             "type": "TemplateMatch",
@@ -70,10 +70,10 @@
         "next": [
             "BattleStartButtonBlocked",
             "[JumpBack]CommonConfirmAction",
-            "[JumpBack]SoloRaidLevelSelect"
+            "[JumpBack]SoloRaidSelectLevel"
         ]
     },
-    "SoloRaidLevelSelect": {
+    "SoloRaidSelectLevel": {
         "desc": "单人突击选择关卡",
         "recognition": {
             "type": "TemplateMatch",

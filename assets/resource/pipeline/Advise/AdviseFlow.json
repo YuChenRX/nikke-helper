@@ -92,10 +92,10 @@
             }
         },
         "next": [
-            "AdviseQuickAdvise"
+            "AdviseClickQuickAdvise"
         ]
     },
-    "AdviseNormalAdvise": {
+    "AdviseClickNormalAdvise": {
         "desc": "普通咨询",
         "recognition": {
             "type": "OCR",
@@ -120,7 +120,7 @@
             "AdviseSettlementFlow"
         ]
     },
-    "AdviseQuickAdvise": {
+    "AdviseClickQuickAdvise": {
         "desc": "快速咨询",
         "recognition": {
             "type": "OCR",
@@ -159,8 +159,8 @@
             "[JumpBack]AdviseRemoveFavorites",
             "[JumpBack]AdviseConfirmRankIncrease",
             "[JumpBack]AdviseBondIncreasedVisible",
-            "[JumpBack]AdviseEpisodeReward",
-            "AdviseNextAdvise"
+            "[JumpBack]AdviseEpisodeRewardEntry",
+            "AdviseClickNextAdvise"
         ]
     },
     "AdviseRemoveFavorites": {
@@ -238,7 +238,7 @@
             }
         }
     },
-    "AdviseNextAdvise": {
+    "AdviseClickNextAdvise": {
         "desc": "下一个咨询",
         "recognition": {
             "type": "TemplateMatch",
@@ -265,7 +265,7 @@
     "AdviseCollectionNotCompletedFlow": {
         "desc": "未收集完咨询日志",
         "next": [
-            "AdviseNormalAdvise"
+            "AdviseClickNormalAdvise"
         ]
     },
     "AdviseFavoriteSelected": {
