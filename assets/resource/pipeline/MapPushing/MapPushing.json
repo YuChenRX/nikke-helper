@@ -9,6 +9,7 @@
         },
         "next": [
             "[JumpBack]BattleEntryFlow",
+            "[JumpBack]CommonSkipPlot",
             "[JumpBack]MapPushingClickMonster",
             "[JumpBack]MapPushingClickPlate"
         ]
