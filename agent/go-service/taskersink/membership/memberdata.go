@@ -183,7 +183,8 @@ func checkMembership() *MembershipStatus {
 		RegularDailyRuntimeMinutes:  10,
 		SpecialPeriodRuntimeMinutes: 0,
 		AllFeaturesUnlocked:         true,
-		IsMember:                    false,
+		UnlimitedRuntime:            true,
+		IsMember:                    true,
 		DeviceCode:                  deviceCode,
 	}
 
