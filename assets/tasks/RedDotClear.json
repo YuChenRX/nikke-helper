@@ -90,6 +90,7 @@
         "RedDotClearProfilePage": {
             "type": "switch",
             "label": "$option.RedDotClearProfilePage.label",
+            "description": "$option.RedDotClearProfilePage.description",
             "cases": [
                 {
                     "name": "Yes",
@@ -134,6 +135,7 @@
         "RedDotClearCostumeGacha": {
             "type": "switch",
             "label": "$option.RedDotClearCostumeGacha.label",
+            "description": "$option.RedDotClearCostumeGacha.description",
             "cases": [
                 {
                     "name": "Yes",
