@@ -38,7 +38,7 @@
         },
         "next": [
             "RedDotClearBlaBlaFlow",
-            "[JumpBack]CommonClickBlank"
+            "RedDotClearBlaBlaClickEntry" //兜底
         ]
     },
     "BlaBlaVisible": {
