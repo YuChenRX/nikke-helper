@@ -220,7 +220,7 @@ jobs:
     needs: meta
     runs-on: ubuntu-latest
     outputs:
-      release_body: ${{ steps.git-cliff.outputs.content }}
+      release_body: ${{ steps.release-body.outputs.content }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -240,6 +240,36 @@ jobs:
         env:
           OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
+
+      - name: Append commit summary
+        id: release-body
+        shell: bash
+        run: |
+          current="${{ needs.meta.outputs.tag }}"
+          previous="$(git describe --tags --match 'v*' --abbrev=0 "${current}^" 2>/dev/null || true)"
+
+          {
+            cat CHANGES.md
+            echo
+            echo "## 更新信息"
+            echo
+            if [ -n "$previous" ]; then
+              echo "从 \`$previous\` 到 \`$current\`："
+              echo
+              git log --no-merges --pretty=format:'- %s (%h)' "$previous..$current" | head -100
+            else
+              echo "当前版本提交："
+              echo
+              git log --no-merges --pretty=format:'- %s (%h)' "$current" | head -100
+            fi
+            echo
+          } > RELEASE_BODY.md
+
+          {
+            echo "content<<EOF"
+            cat RELEASE_BODY.md
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
   release:
     if: ${{ needs.meta.outputs.is_release == 'true' }}
