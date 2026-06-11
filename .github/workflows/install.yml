@@ -246,7 +246,11 @@ jobs:
         shell: bash
         run: |
           current="${{ needs.meta.outputs.tag }}"
-          previous="$(git describe --tags --match 'v*' --abbrev=0 "${current}^" 2>/dev/null || true)"
+          target="$current"
+          if ! git rev-parse --verify -q "${target}^{commit}" >/dev/null; then
+            target="HEAD"
+          fi
+          previous="$(git describe --tags --match 'v*' --abbrev=0 "${target}^" 2>/dev/null || true)"
 
           {
             cat CHANGES.md
@@ -256,11 +260,11 @@ jobs:
             if [ -n "$previous" ]; then
               echo "从 \`$previous\` 到 \`$current\`："
               echo
-              git log --no-merges --pretty=format:'- %s (%h)' "$previous..$current" | head -100
+              git log --no-merges --pretty=format:'- %s (%h)' "$previous..$target" | head -100
             else
               echo "当前版本提交："
               echo
-              git log --no-merges --pretty=format:'- %s (%h)' "$current" | head -100
+              git log --no-merges --pretty=format:'- %s (%h)' "$target" | head -100
             fi
             echo
           } > RELEASE_BODY.md
