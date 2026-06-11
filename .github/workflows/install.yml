@@ -251,14 +251,12 @@ jobs:
           path: assets
 
       - run: |
-          cd assets
-          for f in *; do
-            (cd "$f" && zip -r "../$f.zip" .)
-          done
+          zip_name="MDA-win-x86_64-${{ needs.meta.outputs.tag }}.zip"
+          (cd assets && zip -r "../$zip_name" .)
 
       - uses: softprops/action-gh-release@v2
         with:
-          files: assets/*
+          files: "*.zip"
           tag_name: ${{ needs.meta.outputs.tag }}
           body: ${{ needs.changelog.outputs.release_body }}
           draft: false
