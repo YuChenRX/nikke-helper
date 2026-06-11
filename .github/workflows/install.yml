@@ -17,11 +17,6 @@ on:
       - "v*"
     branches:
       - "**"
-    paths:
-      - ".github/workflows/install.yml"
-      - "assets/**"
-      - "agent/**"
-      - "**.py"
   pull_request:
     branches:
       - "**"
