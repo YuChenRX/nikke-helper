@@ -44,6 +44,7 @@ jobs:
       - name: Create release tag
         if: steps.merge.outputs.changed == 'true'
         run: |
-          tag="v0.0.0-ci.upstream.$(date -u +%Y%m%d-%H%M)-${{ steps.merge.outputs.sha }}"
+          patch=$((10#$(date -u +%H%M)))
+          tag="v1.$(date -u +%Y%m%d).$patch"
           git tag "$tag"
           git push origin "$tag"
