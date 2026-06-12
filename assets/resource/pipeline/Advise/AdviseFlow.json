@@ -3,6 +3,7 @@
         "desc": "开始咨询流程",
         "next": [
             "AdviseAttemptsExhausted",
+            "AdviseCurrentTargetCompletedFlow",
             "AdviseCollectionCompletedFlow",
             "AdviseCollectionNotCompletedFlow"
         ]
@@ -29,6 +30,31 @@
                     567,
                     155,
                     53
+                ],
+                "lower": [
+                    100,
+                    100,
+                    100
+                ],
+                "upper": [
+                    180,
+                    180,
+                    180
+                ],
+                "count": 500
+            }
+        }
+    },
+    "AdviseQuickAdviseGrayButtonVisible": {
+        "desc": "快速咨询按钮变灰",
+        "recognition": {
+            "type": "ColorMatch",
+            "param": {
+                "roi": [
+                    647,
+                    527,
+                    155,
+                    35
                 ],
                 "lower": [
                     100,
@@ -101,6 +127,21 @@
         },
         "next": [
             "AdviseClickQuickAdvise"
+        ]
+    },
+    "AdviseCurrentTargetCompletedFlow": {
+        "desc": "当前咨询对象已完成",
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "AdviseQuickAdviseGrayButtonVisible",
+                    "AdviseGrayButtonVisible"
+                ]
+            }
+        },
+        "next": [
+            "AdviseClickNextAdvise"
         ]
     },
     "AdviseClickNormalAdvise": {
