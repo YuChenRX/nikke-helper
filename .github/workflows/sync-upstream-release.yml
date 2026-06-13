@@ -43,8 +43,16 @@ jobs:
 
       - name: Create release tag
         if: steps.merge.outputs.changed == 'true'
+        id: tag
         run: |
           patch=$((10#$(date -u +%H%M)))
           tag="v1.$(date -u +%Y%m%d).$patch"
           git tag "$tag"
           git push origin "$tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger release build
+        if: steps.merge.outputs.changed == 'true'
+        run: gh workflow run install.yml --ref "${{ steps.tag.outputs.tag }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
