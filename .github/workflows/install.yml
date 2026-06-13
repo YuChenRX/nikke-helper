@@ -153,8 +153,8 @@ jobs:
             # 先把 MXU 可执行文件统一落到最终命名，避免后续步骤改错目标文件
             if [[ "${{ matrix.os }}" == "win" ]]; then
               if [ -f "MXU/mxu.exe" ]; then
-                cp "MXU/mxu.exe" "install/MDA.exe"
-                echo "Copied MXU executable to install/MDA.exe"
+                cp "MXU/mxu.exe" "install/alas.exe"
+                echo "Copied MXU executable to install/alas.exe"
               fi
             else
               if [ -f "MXU/mxu" ]; then
@@ -174,24 +174,22 @@ jobs:
             echo "MXU directory not found, skipping MXU integration."
           fi
 
-      - name: Convert PNG to ICO
+      - name: Install app icon
         if: matrix.os == 'win' && matrix.arch == 'x86_64'
         shell: bash
         run: |
-          choco install imagemagick -y
-          magick convert assets/logo.png -define icon:auto-resize=256,128,64,48,32,24,16 MDA.ico
-          cp MDA.ico install/logo.ico
+          cp assets/nkas.ico install/logo.ico
 
       - name: Modify MXU exe icon
         if: matrix.os == 'win' && matrix.arch == 'x86_64'
         shell: bash
         run: |
           curl -L https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe -o rcedit.exe
-          if [ -f "install/MDA.exe" ]; then
-            ./rcedit.exe "install/MDA.exe" --set-icon "MDA.ico"
+          if [ -f "install/alas.exe" ]; then
+            ./rcedit.exe "install/alas.exe" --set-icon "assets/nkas.ico"
             echo "MXU icon modified successfully"
           elif [ -f "install/mxu.exe" ]; then
-            ./rcedit.exe "install/mxu.exe" --set-icon "MDA.ico"
+            ./rcedit.exe "install/mxu.exe" --set-icon "assets/nkas.ico"
             echo "MXU icon modified successfully"
           else
             echo "MXU exe not found, skipping icon update."
@@ -206,6 +204,10 @@ jobs:
             echo "✅ interface.json found"
           else
             echo "❌ interface.json NOT found"
+            exit 1
+          fi
+          if [[ "${{ matrix.os }}" == "win" && ! -f "install/alas.exe" ]]; then
+            echo "❌ alas.exe NOT found"
             exit 1
           fi
 
