@@ -53,6 +53,6 @@ jobs:
 
       - name: Trigger release build
         if: steps.merge.outputs.changed == 'true'
-        run: gh workflow run install.yml --ref "${{ steps.tag.outputs.tag }}"
+        run: gh workflow run install.yml --repo "$GITHUB_REPOSITORY" --ref "${{ steps.tag.outputs.tag }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
