@@ -22,8 +22,10 @@ on:
       - "**"
     paths:
       - ".github/workflows/install.yml"
+      - "update-and-start.ps1"
       - "assets/**"
       - "agent/**"
+      - "tools/updater-launcher/**"
       - "**.py"
   workflow_dispatch:
 
@@ -153,8 +155,8 @@ jobs:
             # 先把 MXU 可执行文件统一落到最终命名，避免后续步骤改错目标文件
             if [[ "${{ matrix.os }}" == "win" ]]; then
               if [ -f "MXU/mxu.exe" ]; then
-                cp "MXU/mxu.exe" "install/alas.exe"
-                echo "Copied MXU executable to install/alas.exe"
+                cp "MXU/mxu.exe" "install/alas-app.exe"
+                echo "Copied MXU executable to install/alas-app.exe"
               fi
             else
               if [ -f "MXU/mxu" ]; then
@@ -179,14 +181,25 @@ jobs:
         shell: bash
         run: |
           cp assets/nkas.ico install/logo.ico
+          cp update-and-start.ps1 install/update-and-start.ps1
+
+      - name: Build updater launcher
+        if: matrix.os == 'win' && matrix.arch == 'x86_64'
+        shell: pwsh
+        run: |
+          $csc = Join-Path $env:WINDIR "Microsoft.NET\Framework64\v4.0.30319\csc.exe"
+          if (!(Test-Path $csc)) {
+            throw "csc.exe not found: $csc"
+          }
+          & $csc /nologo /target:winexe /win32icon:assets\nkas.ico /out:install\alas.exe tools\updater-launcher\AlasLauncher.cs
 
       - name: Modify MXU exe icon
         if: matrix.os == 'win' && matrix.arch == 'x86_64'
         shell: bash
         run: |
           curl -L https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe -o rcedit.exe
-          if [ -f "install/alas.exe" ]; then
-            ./rcedit.exe "install/alas.exe" --set-icon "assets/nkas.ico"
+          if [ -f "install/alas-app.exe" ]; then
+            ./rcedit.exe "install/alas-app.exe" --set-icon "assets/nkas.ico"
             echo "MXU icon modified successfully"
           elif [ -f "install/mxu.exe" ]; then
             ./rcedit.exe "install/mxu.exe" --set-icon "assets/nkas.ico"
@@ -208,6 +221,10 @@ jobs:
           fi
           if [[ "${{ matrix.os }}" == "win" && ! -f "install/alas.exe" ]]; then
             echo "❌ alas.exe NOT found"
+            exit 1
+          fi
+          if [[ "${{ matrix.os }}" == "win" && ! -f "install/alas-app.exe" ]]; then
+            echo "❌ alas-app.exe NOT found"
             exit 1
           fi
 
