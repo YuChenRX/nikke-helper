@@ -6,7 +6,8 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repo = "YuChenRX/nikke-helper"
-$repoApi = "https://api.github.com/repos/$repo/releases/latest"
+$repoUrl = "https://github.com/$repo"
+$latestReleaseUrl = "$repoUrl/releases/latest"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $releaseDir = if (Test-Path -LiteralPath (Join-Path $root "interface.json")) {
     $root
@@ -60,8 +61,7 @@ function Get-WebProxy {
     $candidates = @(
         $env:HTTPS_PROXY,
         $env:HTTP_PROXY,
-        $env:ALL_PROXY,
-        "http://127.0.0.1:7890"
+        $env:ALL_PROXY
     )
 
     foreach ($candidate in $candidates) {
@@ -71,25 +71,6 @@ function Get-WebProxy {
     }
 
     return $null
-}
-
-function Invoke-WithProxyEnv($proxy, [scriptblock]$body) {
-    $oldHttp = $env:HTTP_PROXY
-    $oldHttps = $env:HTTPS_PROXY
-    $oldAll = $env:ALL_PROXY
-
-    try {
-        if ($proxy) {
-            $env:HTTP_PROXY = $proxy
-            $env:HTTPS_PROXY = $proxy
-            $env:ALL_PROXY = $proxy
-        }
-        return & $body
-    } finally {
-        $env:HTTP_PROXY = $oldHttp
-        $env:HTTPS_PROXY = $oldHttps
-        $env:ALL_PROXY = $oldAll
-    }
 }
 
 function Get-CurrentVersion {
@@ -107,68 +88,67 @@ function Get-CurrentVersion {
 }
 
 function Get-LatestRelease {
-    $headers = @{
-        "User-Agent" = "nikke-helper-updater"
-        "Accept" = "application/vnd.github+json"
-    }
-
-    $request = @{
-        Uri = $repoApi
-        Headers = $headers
-    }
     $proxy = Get-WebProxy
     if ($proxy) {
         Write-Step "使用代理：$proxy"
-        $request.Proxy = $proxy
     }
 
+    $handler = [System.Net.Http.HttpClientHandler]::new()
+    $handler.AllowAutoRedirect = $false
+    if ($proxy) {
+        $handler.Proxy = [System.Net.WebProxy]::new($proxy)
+        $handler.UseProxy = $true
+    }
+
+    $client = [System.Net.Http.HttpClient]::new($handler)
+    $locationText = ""
     try {
-        return Invoke-RestMethod @request
+        $request = [System.Net.Http.HttpRequestMessage]::new([System.Net.Http.HttpMethod]::Get, $latestReleaseUrl)
+        $request.Headers.UserAgent.ParseAdd("nikke-helper-updater")
+        $response = $client.SendAsync($request).GetAwaiter().GetResult()
+        $location = $response.Headers.Location
+
+        if (-not $location) {
+            throw "GitHub 没有返回最新版本跳转地址"
+        }
+
+        $locationText = [string]$location
     } catch {
-        Write-Step "PowerShell 请求 GitHub 失败，尝试 gh：$($_.Exception.Message)"
+        Write-Step "PowerShell 获取最新版本失败，尝试 curl.exe：$($_.Exception.Message)"
+    } finally {
+        $client.Dispose()
+        $handler.Dispose()
     }
 
-    if (Get-Command gh -ErrorAction SilentlyContinue) {
-        return Invoke-WithProxyEnv $proxy {
-            $json = & gh api "repos/$repo/releases/latest"
-            if ($LASTEXITCODE -ne 0) {
-                throw "gh api 请求失败"
-            }
-            return $json | ConvertFrom-Json
+    if (-not $locationText) {
+        if (-not (Get-Command curl.exe -ErrorAction SilentlyContinue)) {
+            throw "无法获取最新版本：PowerShell 请求失败，且未找到 curl.exe"
+        }
+
+        $curlArgs = @("-L", "-s", "-o", "NUL", "-w", "%{url_effective}", "-H", "User-Agent: nikke-helper-updater", $latestReleaseUrl)
+        if ($proxy) {
+            $curlArgs = @("--proxy", $proxy) + $curlArgs
+        }
+        $locationText = (& curl.exe @curlArgs).Trim()
+        if ($LASTEXITCODE -ne 0 -or -not $locationText) {
+            throw "curl 获取最新版本失败"
         }
     }
 
-    if (Get-Command curl.exe -ErrorAction SilentlyContinue) {
-        return Invoke-WithProxyEnv $proxy {
-            $curlArgs = @("-L", "-H", "User-Agent: nikke-helper-updater", $repoApi)
-            if ($proxy) {
-                $curlArgs = @("--proxy", $proxy) + $curlArgs
-            }
-            $json = & curl.exe @curlArgs
-            if ($LASTEXITCODE -ne 0) {
-                throw "curl 请求 GitHub 失败"
-            }
-            return $json | ConvertFrom-Json
+    if ($locationText -notmatch "/releases/tag/([^/?#]+)") {
+        throw "无法从跳转地址解析版本：$locationText"
+    }
+
+    $tagName = [Uri]::UnescapeDataString($Matches[1])
+    $assetName = "MDA-win-x86_64-$tagName.zip"
+
+    return [PSCustomObject]@{
+        tag_name = $tagName
+        asset = [PSCustomObject]@{
+            name = $assetName
+            browser_download_url = "$repoUrl/releases/download/$tagName/$assetName"
         }
     }
-
-    throw "无法请求 GitHub：PowerShell 请求失败，且未找到 gh 或 curl.exe"
-}
-
-function Select-WindowsAsset($release) {
-    $assets = @($release.assets)
-    $asset = $assets |
-        Where-Object { $_.name -match "win" -and $_.name -match "x86_64" -and $_.name -match "\.zip$" } |
-        Select-Object -First 1
-
-    if (-not $asset) {
-        $asset = $assets |
-            Where-Object { $_.name -match "\.zip$" } |
-            Sort-Object size -Descending |
-            Select-Object -First 1
-    }
-
-    return $asset
 }
 
 function Test-AppRunning {
@@ -244,39 +224,22 @@ function Download-Asset($asset, $tagName) {
         Invoke-WebRequest @downloadRequest
         return
     } catch {
-        Write-Step "PowerShell 下载失败，尝试 gh：$($_.Exception.Message)"
-    }
-
-    if (Get-Command gh -ErrorAction SilentlyContinue) {
-        Invoke-WithProxyEnv $proxy {
-            & gh release download $tagName --repo $repo --pattern $asset.name --dir $workDir --clobber
-            if ($LASTEXITCODE -ne 0) {
-                throw "gh release download 失败"
-            }
-        }
-        $downloaded = Get-ChildItem -LiteralPath $workDir -Filter "*.zip" | Select-Object -First 1
-        if (-not $downloaded) {
-            throw "gh 下载后没有找到 zip 文件"
-        }
-        Move-Item -LiteralPath $downloaded.FullName -Destination $archivePath -Force
-        return
+        Write-Step "PowerShell 下载失败，尝试 curl.exe：$($_.Exception.Message)"
     }
 
     if (Get-Command curl.exe -ErrorAction SilentlyContinue) {
-        Invoke-WithProxyEnv $proxy {
-            $curlArgs = @("-L", "-H", "User-Agent: nikke-helper-updater", "-o", $archivePath, $asset.browser_download_url)
-            if ($proxy) {
-                $curlArgs = @("--proxy", $proxy) + $curlArgs
-            }
-            & curl.exe @curlArgs
-            if ($LASTEXITCODE -ne 0) {
-                throw "curl 下载失败"
-            }
+        $curlArgs = @("-L", "-H", "User-Agent: nikke-helper-updater", "-o", $archivePath, $asset.browser_download_url)
+        if ($proxy) {
+            $curlArgs = @("--proxy", $proxy) + $curlArgs
+        }
+        & curl.exe @curlArgs
+        if ($LASTEXITCODE -ne 0) {
+            throw "curl 下载失败"
         }
         return
     }
 
-    throw "无法下载更新包：PowerShell 下载失败，且未找到 gh 或 curl.exe"
+    throw "无法下载更新包：PowerShell 下载失败，且未找到 curl.exe"
 }
 
 function Start-App {
@@ -327,7 +290,7 @@ try {
         exit 0
     }
 
-    $asset = Select-WindowsAsset $latest
+    $asset = $latest.asset
     if (-not $asset) {
         Write-Step "没有找到 Windows zip 更新包，跳过更新"
         Start-App
