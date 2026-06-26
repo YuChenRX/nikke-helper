@@ -154,7 +154,8 @@
         "post_wait_freezes": 200,
         "next": [
             "[JumpBack]RecycleRoomClickMax",
-            "RecycleRoomClickUpgrade"
+            "RecycleRoomClickUpgrade",
+            "RecycleRoomClickRedDot" //兜底
         ]
     },
     "RecycleRoomClickMax": {
@@ -231,6 +232,7 @@
         "post_wait_freezes": 500,
         "next": [
             "[JumpBack]RecycleRoomUpgradeConfirm",
+            "RecycleRoomClickUpgrade", //兜底
             "CommonClosePage"
         ]
     },
