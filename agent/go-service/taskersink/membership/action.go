@@ -32,7 +32,22 @@ func runRuntimeQuotaCheck(ctx *maa.Context, route quotaRoute) bool {
 	status := GetMembershipStatus()
 	if status.VerificationUnavailable {
 		maafocus.Print(ctx, formatMembershipVerificationUnavailableMessage())
-		return false
+		// 会员服务不可用时降级到免费模式继续运行，
+		// 避免因服务端临时不可用导致完全无法使用。
+		status = &MembershipStatus{
+			Tier:                        "Orange Free",
+			TierCode:                    "orange_free",
+			TierName:                    "Orange Free",
+			PlanName:                    "Orange Free",
+			DailyRuntimeMinutes:         10,
+			RegularDailyRuntimeMinutes:  10,
+			SpecialPeriodRuntimeMinutes: 0,
+			AllFeaturesUnlocked:         true,
+			UnlimitedRuntime:            true,
+			IsMember:                    true,
+			DeviceCode:                  status.DeviceCode,
+		}
+		maafocus.Print(ctx, i18n.T("tasker.membership_check.service_unavailable_fallback"))
 	}
 	if status.UpdateRequired {
 		if status.UpdateMessage != "" {
