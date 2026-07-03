@@ -7,6 +7,9 @@
                 "custom_action": "RuntimeQuotaCheck"
             }
         },
+        "focus": {
+            "Node.Action.Succeeded": "$focus.MapPushingFlow.Action.Succeeded"
+        },
         "next": [
             "[JumpBack]BattleEntryFlow",
             "[JumpBack]CommonSkipPlot",

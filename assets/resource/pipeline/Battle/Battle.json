@@ -350,6 +350,7 @@
     },
     "BattleSkipBossCutscene": {
         "desc": "跳过Boss过场动画",
+        "max_hit": 5,
         "recognition": {
             "type": "OCR",
             "param": {
