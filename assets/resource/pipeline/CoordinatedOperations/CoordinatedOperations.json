@@ -214,9 +214,15 @@
                 ]
             }
         },
+        "focus": {
+            "Node.Recognition.Succeeded": "$focus.CoordinatedOperationsConfirmConnectionInterrupted.Succeeded"
+        },
         "action": {
             "type": "Click"
-        }
+        },
+        "next": [
+            "CommonStopTask"
+        ]
     },
     "CoordinatedOperationsUnable": {
         "desc": "无法进行协同作战",

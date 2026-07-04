@@ -518,6 +518,10 @@
     "CommonEndTask": {
         "desc": "空节点，用于结束流程"
     },
+    "CommonStopTask": {
+        "desc": "强制结束当前任务",
+        "action": "StopTask"
+    },
     "CommonArkCornerVisible": {
         "desc": "左上角的方舟可见",
         "recognition": {
