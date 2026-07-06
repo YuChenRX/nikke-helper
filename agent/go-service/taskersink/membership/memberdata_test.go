@@ -1,6 +1,38 @@
 package membership
 
-import "testing"
+import (
+	"errors"
+	"testing"
+	"time"
+)
+
+func resetMembershipTestGlobals(t *testing.T) {
+	t.Helper()
+
+	oldAppVersion := appVersion
+	oldClientName := clientName
+	oldGenerateDeviceCodeV7 := generateDeviceCodeV7
+	oldFetchMemberStatusFn := fetchMemberStatusFn
+
+	t.Cleanup(func() {
+		appVersion = oldAppVersion
+		clientName = oldClientName
+		generateDeviceCodeV7 = oldGenerateDeviceCodeV7
+		fetchMemberStatusFn = oldFetchMemberStatusFn
+
+		cachedStatusMu.Lock()
+		cachedStatus = nil
+		cachedStatusTime = time.Time{}
+		cachedDeviceCode = DeviceCodeV7{}
+		cachedStatusMu.Unlock()
+	})
+
+	cachedStatusMu.Lock()
+	cachedStatus = nil
+	cachedStatusTime = time.Time{}
+	cachedDeviceCode = DeviceCodeV7{}
+	cachedStatusMu.Unlock()
+}
 
 func TestStatusFromResponseUsesNewQuotaFields(t *testing.T) {
 	status := statusFromResponse(&MemberStatusResponse{
@@ -42,5 +74,38 @@ func TestStatusFromResponseFallsBackToTierSpecialQuota(t *testing.T) {
 	}
 	if status.SpecialPeriodRuntimeMinutes != 600 {
 		t.Fatalf("SpecialPeriodRuntimeMinutes = %d, want fallback 600", status.SpecialPeriodRuntimeMinutes)
+	}
+}
+
+func TestCheckMembershipUnavailableFallsBackToFreeStatus(t *testing.T) {
+	resetMembershipTestGlobals(t)
+	appVersion = "1.0.0"
+	clientName = "MFAWPF"
+	generateDeviceCodeV7 = func() DeviceCodeV7 {
+		return DeviceCodeV7{CPUHash: "cpu-hash"}
+	}
+	fetchMemberStatusFn = func(DeviceCodeV7) (*MemberStatusResponse, error) {
+		return nil, errors.New("temporary service failure")
+	}
+
+	status := checkMembership()
+
+	if !status.VerificationUnavailable {
+		t.Fatalf("VerificationUnavailable = false, want true")
+	}
+	if status.UpdateRequired {
+		t.Fatalf("UpdateRequired = true, want false")
+	}
+	if status.IsMember {
+		t.Fatalf("IsMember = true, want false")
+	}
+	if status.TierCode != "orange_free" {
+		t.Fatalf("TierCode = %q, want orange_free", status.TierCode)
+	}
+	if status.RegularDailyRuntimeMinutes != 10 {
+		t.Fatalf("RegularDailyRuntimeMinutes = %d, want 10", status.RegularDailyRuntimeMinutes)
+	}
+	if status.DeviceCode.CPUHash != "cpu-hash" {
+		t.Fatalf("DeviceCode.CPUHash = %q, want cpu-hash", status.DeviceCode.CPUHash)
 	}
 }

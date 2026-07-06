@@ -99,20 +99,6 @@ func (t *RuntimeTracker) start(tasker *maa.Tasker, detail maa.TaskerTaskDetail) 
 	status := GetMembershipStatus()
 	if status.VerificationUnavailable {
 		printMembershipVerificationUnavailable()
-		// 会员服务不可用时降级到免费模式继续运行
-		status = &MembershipStatus{
-			Tier:                        "Orange Free",
-			TierCode:                    "orange_free",
-			TierName:                    "Orange Free",
-			PlanName:                    "Orange Free",
-			DailyRuntimeMinutes:         10,
-			RegularDailyRuntimeMinutes:  10,
-			SpecialPeriodRuntimeMinutes: 0,
-			AllFeaturesUnlocked:         true,
-			UnlimitedRuntime:            true,
-			IsMember:                    true,
-			DeviceCode:                  status.DeviceCode,
-		}
 	}
 	route := quotaRouteForEntry(detail.Entry)
 	snapshot, ok, err := EnsureQuotaRouteAvailable(status, route)
@@ -187,10 +173,6 @@ func (t *RuntimeTracker) finish() {
 
 	if status == nil {
 		status = GetMembershipStatus()
-		if status.VerificationUnavailable {
-			log.Warn().Msg("RuntimeTracker: skipped final quota usage flush because membership verification is unavailable")
-			return
-		}
 	}
 	if _, err := AddQuotaRouteUsageSeconds(status, route, billableSeconds); err != nil {
 		log.Warn().Err(err).Msg("RuntimeTracker: failed to flush final quota usage")
