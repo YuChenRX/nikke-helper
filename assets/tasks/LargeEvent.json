@@ -142,7 +142,8 @@
                             "recognition": {
                                 "param": {
                                     "template": [
-                                        "LargeEvent/WaveToYou/WaveToYouStory1Stage.png"
+                                        "LargeEvent/WaveToYou/WaveToYouStory1Stage.png",
+                                        "LargeEvent/WaveToYou/WaveToYouStory2StageNormal.png"
                                     ]
                                 }
                             }
@@ -151,7 +152,8 @@
                             "recognition": {
                                 "param": {
                                     "template": [
-                                        "LargeEvent/WaveToYou/WaveToYouStory1StageRepeatable.png"
+                                        "LargeEvent/WaveToYou/WaveToYouStory1StageRepeatable.png",
+                                        "LargeEvent/WaveToYou/WaveToYouStory2StageNormalRepeatable.png"
                                     ]
                                 }
                             }
