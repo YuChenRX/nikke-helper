@@ -98,6 +98,7 @@
             "LargeEventMissionClaimedFlow",
             "[JumpBack]LargeEventMissionClaimAll",
             "[JumpBack]CommonConfirmReward",
+            "[JumpBack]CommonConfirmAction",
             "LargeEventClickMissionRedDot" //兜底
         ]
     },
