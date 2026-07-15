@@ -204,8 +204,8 @@
                                 "[JumpBack]LargeEventEnterLoginStamp",
                                 "[JumpBack]LargeEventEnterChallenge",
                                 "[JumpBack]LargeEventEnterStory",
-                                "[JumpBack]LargeEventEnterMission",
                                 "[JumpBack]LargeEventWaveToYouMiniGame",
+                                "[JumpBack]LargeEventEnterMission",
                                 "CommonEndTask"
                             ]
                         }
