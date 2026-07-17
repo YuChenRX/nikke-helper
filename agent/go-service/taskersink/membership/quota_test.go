@@ -24,7 +24,8 @@ func testStatus(minutes int, device string) *MembershipStatus {
 func isolateQuotaState(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
-	t.Setenv("MDA_QUOTA_STATE_DIR", dir)
+	t.Setenv("APPDATA", dir)
+	t.Setenv("XDG_CONFIG_HOME", dir)
 	path, err := quotaStatePath()
 	if err != nil {
 		t.Fatalf("quotaStatePath() failed: %v", err)
@@ -32,29 +33,51 @@ func isolateQuotaState(t *testing.T) string {
 	return path
 }
 
-func TestQuotaStatePathUsesSoftwareDirectory(t *testing.T) {
-	dir := t.TempDir()
-	t.Setenv("MDA_QUOTA_STATE_DIR", dir)
-	t.Setenv("APPDATA", filepath.Join(t.TempDir(), "AppData", "Roaming"))
-
-	path, err := quotaStatePath()
-	if err != nil {
-		t.Fatalf("quotaStatePath() failed: %v", err)
-	}
-
-	want := filepath.Join(dir, "go-service", "membership-quota.json")
-	if path != want {
-		t.Fatalf("quotaStatePath() = %q, want %q", path, want)
-	}
-	if _, err := os.Stat(filepath.Dir(path)); err != nil {
-		t.Fatalf("quotaStatePath() did not create directory: %v", err)
-	}
-}
-
 func mustSaveQuotaState(t *testing.T, path string, state quotaState) {
 	t.Helper()
 	if err := saveQuotaState(path, state); err != nil {
 		t.Fatalf("saveQuotaState() failed: %v", err)
+	}
+}
+
+func mustLoadQuotaState(t *testing.T, path string) quotaState {
+	t.Helper()
+	state, err := loadQuotaState(path)
+	if err != nil {
+		t.Fatalf("loadQuotaState() failed: %v", err)
+	}
+	return state
+}
+
+func TestQuotaBusinessDateUsesBeijingTime(t *testing.T) {
+	tests := []struct {
+		name string
+		now  time.Time
+		want string
+	}{
+		{
+			name: "before 4 AM Beijing time",
+			now:  time.Date(2026, 5, 29, 19, 59, 59, 0, time.UTC),
+			want: "2026-05-29",
+		},
+		{
+			name: "at 4 AM Beijing time",
+			now:  time.Date(2026, 5, 29, 20, 0, 0, 0, time.UTC),
+			want: "2026-05-30",
+		},
+		{
+			name: "ignores source timezone",
+			now:  time.Date(2026, 5, 29, 22, 0, 0, 0, time.FixedZone("UTC-7", -7*60*60)),
+			want: "2026-05-30",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := quotaBusinessDate(tt.now); got != tt.want {
+				t.Fatalf("quotaBusinessDate(%s) = %s, want %s", tt.now, got, tt.want)
+			}
+		})
 	}
 }
 
@@ -169,6 +192,65 @@ func TestNormalizeQuotaStateResetsOnDeviceChange(t *testing.T) {
 	}
 	if state.DeviceHash != deviceHash(newStatus.DeviceCode) {
 		t.Fatalf("DeviceHash was not updated")
+	}
+}
+
+func TestNormalizeQuotaStatePreservesRedeemedCoupons(t *testing.T) {
+	path := isolateQuotaState(t)
+	oldStatus := testStatus(10, "device-a")
+	newStatus := testStatus(10, "device-b")
+	mustSaveQuotaState(t, path, quotaState{
+		Version:    quotaStateVersion,
+		DeviceHash: deviceHash(oldStatus.DeviceCode),
+		TierCode:   "orange_free",
+		RedeemedCoupons: map[string]quotaCouponRedemption{
+			"00112233445566778899aabbccddeeff": {
+				RedeemedAt: "2026-06-03T12:00:00+08:00",
+				RefillType: QuotaRefillTypeDaily,
+			},
+		},
+	})
+
+	_, state, err := normalizeQuotaState(newStatus, time.Date(2026, 6, 3, 12, 0, 0, 0, time.Local))
+	if err != nil {
+		t.Fatalf("normalizeQuotaState() failed: %v", err)
+	}
+	if _, ok := state.RedeemedCoupons["00112233445566778899aabbccddeeff"]; !ok {
+		t.Fatal("redeemed coupon was lost when the device changed")
+	}
+}
+
+func TestLoadQuotaStateRejectsMalformedJSON(t *testing.T) {
+	path := isolateQuotaState(t)
+	malformed := []byte(`{"version":3,"redeemed_coupons":`)
+	if err := os.WriteFile(path, malformed, 0644); err != nil {
+		t.Fatalf("WriteFile() failed: %v", err)
+	}
+
+	if _, err := loadQuotaState(path); err == nil {
+		t.Fatal("loadQuotaState() accepted malformed JSON")
+	}
+	got, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("ReadFile() failed: %v", err)
+	}
+	if string(got) != string(malformed) {
+		t.Fatal("malformed quota state was overwritten")
+	}
+}
+
+func TestQuotaChecksFailClosedForMalformedState(t *testing.T) {
+	path := isolateQuotaState(t)
+	if err := os.WriteFile(path, []byte(`{"version":`), 0644); err != nil {
+		t.Fatalf("WriteFile() failed: %v", err)
+	}
+	status := testStatus(10, "device-a")
+
+	if _, ok, err := EnsureQuotaAvailable(status, quotaPoolRegularDaily); err == nil || ok {
+		t.Fatalf("EnsureQuotaAvailable() = ok %v, err %v; want fail closed", ok, err)
+	}
+	if _, ok, err := EnsureQuotaRouteAvailable(status, quotaRouteRegular); err == nil || ok {
+		t.Fatalf("EnsureQuotaRouteAvailable() = ok %v, err %v; want fail closed", ok, err)
 	}
 }
 

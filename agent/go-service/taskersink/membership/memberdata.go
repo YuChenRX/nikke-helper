@@ -125,10 +125,18 @@ type MembershipStatus struct {
 }
 
 var (
-	cachedStatus     *MembershipStatus
-	cachedStatusMu   sync.RWMutex
-	cachedStatusTime time.Time
-	cachedDeviceCode DeviceCodeV7
+	cachedStatus      *MembershipStatus
+	cachedStatusMu    sync.RWMutex
+	cachedStatusTime  time.Time
+	membershipCheckMu sync.Mutex
+	cachedDeviceCode  DeviceCodeV7
+	deviceCodeCached  bool
+	deviceCodeMu      sync.Mutex
+)
+
+var (
+	generateDeviceCodeV7 = GenerateDeviceCodeV7
+	fetchMemberStatusFn  = fetchMemberStatus
 )
 
 const (
@@ -139,19 +147,46 @@ const (
 
 // GetMembershipStatus returns the current membership status, using cache if available.
 func GetMembershipStatus() *MembershipStatus {
-	cachedStatusMu.RLock()
-	if cachedStatus != nil && time.Since(cachedStatusTime) < cacheExpiry {
-		status := cachedStatus
-		cachedStatusMu.RUnlock()
+	if status := getCachedStatus(); status != nil {
 		return status
 	}
-	cachedStatusMu.RUnlock()
+
+	membershipCheckMu.Lock()
+	defer membershipCheckMu.Unlock()
+
+	if status := getCachedStatus(); status != nil {
+		return status
+	}
 
 	return checkMembership()
 }
 
+func getCachedStatus() *MembershipStatus {
+	cachedStatusMu.RLock()
+	defer cachedStatusMu.RUnlock()
+	if cachedStatus == nil || time.Since(cachedStatusTime) >= cacheExpiry {
+		return nil
+	}
+	return cachedStatus
+}
+
 // checkMembership returns a default free-tier membership status.
 // No network requests to doropay.top are made; no device code is sent.
+func getDeviceCode() DeviceCodeV7 {
+	deviceCodeMu.Lock()
+	defer deviceCodeMu.Unlock()
+	if !deviceCodeCached {
+		deviceCode := generateDeviceCodeV7()
+		if deviceCode == (DeviceCodeV7{}) {
+			return deviceCode
+		}
+		cachedDeviceCode = deviceCode
+		deviceCodeCached = true
+	}
+	return cachedDeviceCode
+}
+
+// checkMembership performs the full membership check flow.
 func checkMembership() *MembershipStatus {
 	log.Info().Msg("Offline mode: using Orange Free membership with unlimited runtime")
 

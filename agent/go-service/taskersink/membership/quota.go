@@ -4,6 +4,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
@@ -15,6 +17,7 @@ type quotaPool string
 type quotaRoute string
 
 const (
+	quotaStateVersion                = 3
 	quotaPoolRegularDaily  quotaPool = "regular_daily"
 	quotaPoolSpecialPeriod quotaPool = "special_period"
 
@@ -30,11 +33,18 @@ type quotaPoolState struct {
 	UpdatedAt          string `json:"updated_at"`
 }
 
+type quotaCouponRedemption struct {
+	RedeemedAt string          `json:"redeemed_at"`
+	RefillType QuotaRefillType `json:"refill_type"`
+	DeviceHash string          `json:"device_hash,omitempty"`
+}
+
 type quotaState struct {
-	Version    int                       `json:"version,omitempty"`
-	DeviceHash string                    `json:"device_hash"`
-	TierCode   string                    `json:"tier_code"`
-	Pools      map[string]quotaPoolState `json:"pools,omitempty"`
+	Version         int                              `json:"version,omitempty"`
+	DeviceHash      string                           `json:"device_hash"`
+	TierCode        string                           `json:"tier_code"`
+	Pools           map[string]quotaPoolState        `json:"pools,omitempty"`
+	RedeemedCoupons map[string]quotaCouponRedemption `json:"redeemed_coupons,omitempty"`
 
 	BusinessDate       string `json:"business_date,omitempty"`
 	LimitSeconds       int64  `json:"limit_seconds,omitempty"`
@@ -68,8 +78,10 @@ type QuotaSnapshot struct {
 
 var quotaMu sync.Mutex
 
+var beijingLocation = time.FixedZone("Asia/Shanghai", 8*60*60)
+
 func quotaBusinessDate(now time.Time) string {
-	return now.Add(-4 * time.Hour).Format("2006-01-02")
+	return now.In(beijingLocation).Add(-4 * time.Hour).Format("2006-01-02")
 }
 
 func quotaSpecialPeriodKey(status *MembershipStatus) string {
@@ -80,15 +92,14 @@ func quotaSpecialPeriodKey(status *MembershipStatus) string {
 }
 
 func quotaStatePath() (string, error) {
-	dir := os.Getenv("MDA_QUOTA_STATE_DIR")
-	if dir == "" {
-		var err error
-		dir, err = os.Getwd()
-		if err != nil || dir == "" {
-			dir = "."
-		}
+	dir, err := os.UserConfigDir()
+	if err != nil {
+		return "", fmt.Errorf("resolve user config directory: %w", err)
 	}
-	path := filepath.Join(dir, "go-service")
+	if dir == "" {
+		return "", errors.New("user config directory is empty")
+	}
+	path := filepath.Join(dir, "MDA", "go-service")
 	if err := os.MkdirAll(path, 0755); err != nil {
 		return "", err
 	}
@@ -100,16 +111,19 @@ func deviceHash(device DeviceCodeV7) string {
 	return hex.EncodeToString(sum[:])
 }
 
-func loadQuotaState(path string) quotaState {
+func loadQuotaState(path string) (quotaState, error) {
 	data, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return quotaState{}, nil
+	}
 	if err != nil {
-		return quotaState{}
+		return quotaState{}, fmt.Errorf("read quota state: %w", err)
 	}
 	var state quotaState
 	if err := json.Unmarshal(data, &state); err != nil {
-		return quotaState{}
+		return quotaState{}, fmt.Errorf("parse quota state: %w", err)
 	}
-	return state
+	return state, nil
 }
 
 func saveQuotaState(path string, state quotaState) error {
@@ -117,7 +131,38 @@ func saveQuotaState(path string, state quotaState) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(path, data, 0644)
+	temp, err := os.CreateTemp(filepath.Dir(path), ".membership-quota-*.tmp")
+	if err != nil {
+		return err
+	}
+	tempPath := temp.Name()
+	defer os.Remove(tempPath)
+	defer temp.Close()
+
+	if err := temp.Chmod(0644); err != nil {
+		return err
+	}
+	if _, err := temp.Write(data); err != nil {
+		return err
+	}
+	if err := temp.Sync(); err != nil {
+		return err
+	}
+	if err := temp.Close(); err != nil {
+		return err
+	}
+	if err := replaceQuotaStateFile(tempPath, path); err != nil {
+		return err
+	}
+	return nil
+}
+
+func lockQuotaStateFile() (func() error, error) {
+	path, err := quotaStatePath()
+	if err != nil {
+		return nil, err
+	}
+	return acquireQuotaFileLock(path + ".lock")
 }
 
 func quotaLimitSeconds(status *MembershipStatus, pool quotaPool) int64 {
@@ -253,7 +298,10 @@ func normalizeQuotaState(status *MembershipStatus, args ...any) (string, quotaSt
 	if err != nil {
 		return "", quotaState{}, err
 	}
-	state := loadQuotaState(path)
+	state, err := loadQuotaState(path)
+	if err != nil {
+		return "", quotaState{}, err
+	}
 	state = normalizeQuotaStateInMemory(state, status, pool, now)
 	return path, state, nil
 }
@@ -262,20 +310,22 @@ func normalizeQuotaStateInMemory(state quotaState, status *MembershipStatus, poo
 	device := deviceHash(status.DeviceCode)
 	tierCode := normalizeTierCode(status)
 	updatedAt := now.Format(time.RFC3339)
+	redeemedCoupons := state.RedeemedCoupons
 
 	if state.DeviceHash != device || !isRuntimeQuotaSubject(status) {
 		state = quotaState{
-			Version:    2,
-			DeviceHash: device,
-			TierCode:   tierCode,
-			Pools:      map[string]quotaPoolState{},
+			Version:         quotaStateVersion,
+			DeviceHash:      device,
+			TierCode:        tierCode,
+			Pools:           map[string]quotaPoolState{},
+			RedeemedCoupons: redeemedCoupons,
 		}
 	} else {
 		migrateLegacyQuotaState(&state)
 		if state.Pools == nil {
 			state.Pools = map[string]quotaPoolState{}
 		}
-		state.Version = 2
+		state.Version = quotaStateVersion
 		state.DeviceHash = device
 		state.TierCode = tierCode
 	}
@@ -330,6 +380,12 @@ func normalizeQuotaPools(status *MembershipStatus, state quotaState, pools []quo
 }
 
 func quotaSnapshotLocked(status *MembershipStatus, pool quotaPool, now time.Time) (QuotaSnapshot, error) {
+	unlock, err := lockQuotaStateFile()
+	if err != nil {
+		return QuotaSnapshot{}, err
+	}
+	defer unlock()
+
 	path, state, err := normalizeQuotaState(status, pool, now)
 	if err != nil {
 		return QuotaSnapshot{}, err
@@ -450,6 +506,12 @@ func AddQuotaUsageSeconds(status *MembershipStatus, pool quotaPool, seconds int6
 	}
 	quotaMu.Lock()
 	defer quotaMu.Unlock()
+	unlock, err := lockQuotaStateFile()
+	if err != nil {
+		return QuotaSnapshot{}, err
+	}
+	defer unlock()
+
 	now := time.Now()
 	path, state, err := normalizeQuotaState(status, pool, now)
 	if err != nil {
@@ -475,7 +537,7 @@ func EnsureQuotaAvailable(status *MembershipStatus, pool quotaPool) (QuotaSnapsh
 	snapshot, err := GetQuotaSnapshot(status, pool)
 	if err != nil {
 		fallback := snapshotFromState(status, quotaState{Pools: map[string]quotaPoolState{}}, pool)
-		return fallback, true, err
+		return fallback, false, err
 	}
 	if snapshot.UnlimitedRuntime {
 		return snapshot, true, nil
@@ -486,16 +548,27 @@ func EnsureQuotaAvailable(status *MembershipStatus, pool quotaPool) (QuotaSnapsh
 func EnsureQuotaRouteAvailable(status *MembershipStatus, route quotaRoute) (QuotaSnapshot, bool, error) {
 	quotaMu.Lock()
 	defer quotaMu.Unlock()
+	unlock, err := lockQuotaStateFile()
+	if err != nil {
+		fallback := routeSnapshotFromState(status, quotaState{Pools: map[string]quotaPoolState{}}, route)
+		return fallback, false, err
+	}
+	defer unlock()
+
 	now := time.Now()
 	path, err := quotaStatePath()
 	if err != nil {
 		fallback := routeSnapshotFromState(status, quotaState{Pools: map[string]quotaPoolState{}}, route)
-		return fallback, true, err
+		return fallback, false, err
 	}
-	state := loadQuotaState(path)
+	state, err := loadQuotaState(path)
+	if err != nil {
+		fallback := routeSnapshotFromState(status, quotaState{Pools: map[string]quotaPoolState{}}, route)
+		return fallback, false, err
+	}
 	state = normalizeQuotaPools(status, state, []quotaPool{quotaPoolRegularDaily, quotaPoolSpecialPeriod}, now)
 	if err := saveQuotaState(path, state); err != nil {
-		return QuotaSnapshot{}, true, err
+		return QuotaSnapshot{}, false, err
 	}
 	snapshot := routeSnapshotFromState(status, state, route)
 	if snapshot.UnlimitedRuntime {
@@ -514,12 +587,21 @@ func AddQuotaRouteUsageSeconds(status *MembershipStatus, route quotaRoute, secon
 	}
 	quotaMu.Lock()
 	defer quotaMu.Unlock()
+	unlock, err := lockQuotaStateFile()
+	if err != nil {
+		return QuotaSnapshot{}, err
+	}
+	defer unlock()
+
 	now := time.Now()
 	path, err := quotaStatePath()
 	if err != nil {
 		return QuotaSnapshot{}, err
 	}
-	state := loadQuotaState(path)
+	state, err := loadQuotaState(path)
+	if err != nil {
+		return QuotaSnapshot{}, err
+	}
 	state = normalizeQuotaPools(status, state, []quotaPool{quotaPoolRegularDaily, quotaPoolSpecialPeriod}, now)
 	if isRuntimeQuotaSubject(status) {
 		updatedAt := now.Format(time.RFC3339)
