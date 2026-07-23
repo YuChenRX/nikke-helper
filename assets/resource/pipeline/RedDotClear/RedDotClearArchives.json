@@ -18,8 +18,9 @@
             }
         },
         "next": [
+            "[JumpBack]RedDotClearClickMore",
             "RedDotClearArchivesClickEntry",
-            "CommonEndTask"
+            "CommonClickBlank"
         ]
     },
     "RedDotClearArchivesClickEntry": {
@@ -176,6 +177,7 @@
     },
     "ArchivesClickUnlock": {
         "desc": "档案馆点击解锁",
+        "timeout": 30000,
         "recognition": {
             "type": "OCR",
             "param": {
@@ -193,13 +195,15 @@
         "action": {
             "type": "Click"
         },
+        "post_wait_freezes": 1000,
         "next": [
             "[JumpBack]CommonConfirmReward",
             "[JumpBack]CommonConfirmAction",
             "[JumpBack]DialoguesSkipStory",
             "CommonClosePage",
             "[JumpBack]CommonGoBack",
-            "[JumpBack]CommonTouchToContinue"
+            "[JumpBack]CommonTouchToContinue",
+            "[JumpBack]CommonClickBlank"
         ]
     },
     "ArchivesRedDotClickTop": {
@@ -214,7 +218,8 @@
                     33
                 ],
                 "template": [
-                    "Common/RedDot.png"
+                    "Common/RedDot.png",
+                    "Common/New.png"
                 ]
             }
         },
@@ -245,7 +250,8 @@
                     50
                 ],
                 "template": [
-                    "Common/RedDot.png"
+                    "Common/RedDot.png",
+                    "Common/New.png"
                 ]
             }
         },
