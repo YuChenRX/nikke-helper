@@ -24,6 +24,7 @@
         },
         "next": [
             "LargeEventEnterMainPage",
+            "[JumpBack]CommonClickEventChange",
             "CommonEndTask"
         ]
     },
@@ -33,9 +34,9 @@
             "type": "TemplateMatch",
             "param": {
                 "roi": [
-                    824,
+                    799,
                     571,
-                    145,
+                    170,
                     68
                 ],
                 "template": [
@@ -44,7 +45,15 @@
             }
         },
         "action": {
-            "type": "Click"
+            "type": "Click",
+            "param": {
+                "target_offset": [
+                    30,
+                    0,
+                    0,
+                    0
+                ]
+            }
         },
         "next": [
             "LargeEventMainPageFlow",
@@ -67,22 +76,13 @@
                 ]
             }
         },
-        "pre_wait_freezes": {
+        "post_wait_freezes": {
             "time": 1000,
             "target": [
                 446,
                 539,
                 389,
                 82
-            ]
-        },
-        "post_wait_freezes": {
-            "time": 2000,
-            "target": [
-                1250,
-                112,
-                30,
-                107
             ]
         }
     },
@@ -96,23 +96,13 @@
                 ]
             }
         },
-        "pre_wait_freezes": {
+        "post_wait_freezes": {
             "time": 1000,
             "target": [
                 446,
                 539,
                 389,
                 82
-            ]
-        },
-        "action": "DoNothing",
-        "post_wait_freezes": {
-            "time": 2000,
-            "target": [
-                1250,
-                112,
-                30,
-                107
             ]
         },
         "next": [

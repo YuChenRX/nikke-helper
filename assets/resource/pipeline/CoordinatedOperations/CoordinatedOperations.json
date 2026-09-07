@@ -9,12 +9,12 @@
             }
         },
         "next": [
-            "CoordinatedOperationsEntryFlow",
+            "CoordinatedOperationsEntry",
             "[JumpBack]CommonReturnHall"
         ]
     },
-    "CoordinatedOperationsEntryFlow": {
-        "desc": "协同作战",
+    "CoordinatedOperationsEntry": {
+        "desc": "进入协同作战",
         "recognition": {
             "type": "And",
             "param": {
@@ -25,25 +25,24 @@
         },
         "next": [
             "CoordinatedOperationsClickEntry",
-            "[JumpBack]CoordinatedOperationsSlideBanner",
             "CommonEndTask"
         ]
     },
     "CoordinatedOperationsClickEntry": {
-        "desc": "寻找协同作战",
+        "desc": "点击协同作战入口",
         "recognition": {
             "type": "TemplateMatch",
             "param": {
                 "roi": [
-                    96,
-                    55,
-                    66,
-                    59
+                    0,
+                    120,
+                    200,
+                    260
                 ],
                 "template": [
                     "CoordinatedOperations/CoordinatedOperations.png"
                 ],
-                "green_mask": true
+                "threshold": 0.9
             }
         },
         "action": {

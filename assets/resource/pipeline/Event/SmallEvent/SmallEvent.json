@@ -24,6 +24,7 @@
         },
         "next": [
             "SmallEventEnterMainPage",
+            "[JumpBack]CommonClickEventChange",
             "CommonEndTask"
         ]
     },
@@ -33,9 +34,9 @@
             "type": "TemplateMatch",
             "param": {
                 "roi": [
-                    824,
+                    799,
                     571,
-                    145,
+                    170,
                     68
                 ],
                 "template": [
@@ -44,7 +45,15 @@
             }
         },
         "action": {
-            "type": "Click"
+            "type": "Click",
+            "param": {
+                "target_offset": [
+                    30,
+                    0,
+                    0,
+                    0
+                ]
+            }
         },
         "next": [
             "SmallEventMainPageClickStoryArea",

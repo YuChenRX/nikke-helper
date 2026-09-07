@@ -81,7 +81,7 @@ func TestQuotaBusinessDateUsesBeijingTime(t *testing.T) {
 	}
 }
 
-func TestNormalizeQuotaStateCarriesOneDayDebt(t *testing.T) {
+func TestNormalizeQuotaStateResetsUsageOnNewDay(t *testing.T) {
 	path := isolateQuotaState(t)
 	status := testStatus(10, "device-a")
 	device := deviceHash(status.DeviceCode)
@@ -97,22 +97,16 @@ func TestNormalizeQuotaStateCarriesOneDayDebt(t *testing.T) {
 	if err != nil {
 		t.Fatalf("normalizeQuotaState() failed: %v", err)
 	}
-	if state.UsedSeconds != 125 {
-		t.Fatalf("UsedSeconds = %d, want 125", state.UsedSeconds)
-	}
-	if state.CarriedDebtSeconds != 125 {
-		t.Fatalf("CarriedDebtSeconds = %d, want 125", state.CarriedDebtSeconds)
+	if state.UsedSeconds != 0 {
+		t.Fatalf("UsedSeconds = %d, want 0", state.UsedSeconds)
 	}
 	snapshot := snapshotFromState(status, state)
-	if snapshot.RemainingSeconds != 475 {
-		t.Fatalf("RemainingSeconds = %d, want 475", snapshot.RemainingSeconds)
-	}
-	if snapshot.CarriedDebtSeconds != 125 {
-		t.Fatalf("snapshot.CarriedDebtSeconds = %d, want 125", snapshot.CarriedDebtSeconds)
+	if snapshot.RemainingSeconds != 600 {
+		t.Fatalf("RemainingSeconds = %d, want 600", snapshot.RemainingSeconds)
 	}
 }
 
-func TestNormalizeQuotaStateClearsWhenNoDebt(t *testing.T) {
+func TestNormalizeQuotaStateResetsUnderLimitUsageOnNewDay(t *testing.T) {
 	path := isolateQuotaState(t)
 	status := testStatus(10, "device-a")
 	device := deviceHash(status.DeviceCode)
@@ -131,27 +125,30 @@ func TestNormalizeQuotaStateClearsWhenNoDebt(t *testing.T) {
 	if state.UsedSeconds != 0 {
 		t.Fatalf("UsedSeconds = %d, want 0", state.UsedSeconds)
 	}
-	if state.CarriedDebtSeconds != 0 {
-		t.Fatalf("CarriedDebtSeconds = %d, want 0", state.CarriedDebtSeconds)
-	}
 }
 
-func TestCarriedQuotaDebtDecaysAcrossMultipleDays(t *testing.T) {
-	state := quotaState{
-		BusinessDate: "2026-05-28",
+func TestNormalizeQuotaStateCapsSameDayUsageAtLimit(t *testing.T) {
+	path := isolateQuotaState(t)
+	status := testStatus(10, "device-a")
+	now := time.Date(2026, 5, 29, 12, 0, 0, 0, beijingLocation)
+	mustSaveQuotaState(t, path, quotaState{
+		BusinessDate: quotaBusinessDate(now),
+		DeviceHash:   deviceHash(status.DeviceCode),
+		TierCode:     "orange_free",
 		LimitSeconds: 600,
-		UsedSeconds:  1900,
-	}
+		UsedSeconds:  5000,
+	})
 
-	cases := map[string]int64{
-		"2026-05-29": 1300,
-		"2026-05-30": 700,
-		"2026-06-01": 0,
+	_, state, err := normalizeQuotaState(status, now)
+	if err != nil {
+		t.Fatalf("normalizeQuotaState() failed: %v", err)
 	}
-	for businessDate, want := range cases {
-		if got := carriedQuotaDebt(state, businessDate, 600); got != want {
-			t.Fatalf("carriedQuotaDebt(%s) = %d, want %d", businessDate, got, want)
-		}
+	snapshot := snapshotFromState(status, state)
+	if snapshot.UsedSeconds != 600 {
+		t.Fatalf("UsedSeconds = %d, want 600", snapshot.UsedSeconds)
+	}
+	if snapshot.RemainingSeconds != 0 {
+		t.Fatalf("RemainingSeconds = %d, want 0", snapshot.RemainingSeconds)
 	}
 }
 
@@ -254,7 +251,7 @@ func TestQuotaChecksFailClosedForMalformedState(t *testing.T) {
 	}
 }
 
-func TestLimitedMemberCarriesDebt(t *testing.T) {
+func TestLimitedMemberResetsUsageOnNewDay(t *testing.T) {
 	path := isolateQuotaState(t)
 	status := testStatus(60, "device-a")
 	status.IsMember = true
@@ -273,15 +270,12 @@ func TestLimitedMemberCarriesDebt(t *testing.T) {
 	if err != nil {
 		t.Fatalf("normalizeQuotaState() failed: %v", err)
 	}
-	if state.UsedSeconds != 300 {
-		t.Fatalf("UsedSeconds = %d, want 300", state.UsedSeconds)
-	}
-	if state.CarriedDebtSeconds != 300 {
-		t.Fatalf("CarriedDebtSeconds = %d, want 300", state.CarriedDebtSeconds)
+	if state.UsedSeconds != 0 {
+		t.Fatalf("UsedSeconds = %d, want 0", state.UsedSeconds)
 	}
 }
 
-func TestUpgradeToLimitedMemberKeepsDebtWithNewLimit(t *testing.T) {
+func TestUpgradeToLimitedMemberKeepsUsageWithNewLimit(t *testing.T) {
 	path := isolateQuotaState(t)
 	freeStatus := testStatus(10, "device-a")
 	memberStatus := testStatus(60, "device-a")
@@ -310,17 +304,16 @@ func TestUpgradeToLimitedMemberKeepsDebtWithNewLimit(t *testing.T) {
 	}
 }
 
-func TestUnlimitedRuntimeClearsDebt(t *testing.T) {
+func TestUnlimitedRuntimeClearsUsage(t *testing.T) {
 	path := isolateQuotaState(t)
 	status := testStatus(10, "device-a")
 	device := deviceHash(status.DeviceCode)
 	mustSaveQuotaState(t, path, quotaState{
-		BusinessDate:       "2026-05-29",
-		DeviceHash:         device,
-		TierCode:           "orange_free",
-		LimitSeconds:       600,
-		UsedSeconds:        1800,
-		CarriedDebtSeconds: 1200,
+		BusinessDate: "2026-05-29",
+		DeviceHash:   device,
+		TierCode:     "orange_free",
+		LimitSeconds: 600,
+		UsedSeconds:  1800,
 	})
 	status.UnlimitedRuntime = true
 	status.IsMember = true
@@ -332,12 +325,9 @@ func TestUnlimitedRuntimeClearsDebt(t *testing.T) {
 	if state.UsedSeconds != 0 {
 		t.Fatalf("UsedSeconds = %d, want 0", state.UsedSeconds)
 	}
-	if state.CarriedDebtSeconds != 0 {
-		t.Fatalf("CarriedDebtSeconds = %d, want 0", state.CarriedDebtSeconds)
-	}
 }
 
-func TestOldQuotaStateFallsBackToCurrentLimit(t *testing.T) {
+func TestOldQuotaStateResetsUsageOnNewDay(t *testing.T) {
 	path := isolateQuotaState(t)
 	status := testStatus(10, "device-a")
 	device := deviceHash(status.DeviceCode)
@@ -359,8 +349,8 @@ func TestOldQuotaStateFallsBackToCurrentLimit(t *testing.T) {
 	if err != nil {
 		t.Fatalf("normalizeQuotaState() failed: %v", err)
 	}
-	if state.UsedSeconds != 125 {
-		t.Fatalf("UsedSeconds = %d, want 125", state.UsedSeconds)
+	if state.UsedSeconds != 0 {
+		t.Fatalf("UsedSeconds = %d, want 0", state.UsedSeconds)
 	}
 }
 
@@ -397,6 +387,22 @@ func TestSpecialThenRegularRouteConsumesSpecialFirstThenRegular(t *testing.T) {
 	}
 	if snapshot.RegularUsedSeconds != 30 {
 		t.Fatalf("RegularUsedSeconds = %d, want 30", snapshot.RegularUsedSeconds)
+	}
+}
+
+func TestAddQuotaRouteUsageCapsAtDailyLimit(t *testing.T) {
+	isolateQuotaState(t)
+	status := testStatus(10, "device-a")
+
+	snapshot, exceeded, err := addQuotaRouteUsageSeconds(status, quotaRouteRegular, 601)
+	if err != nil {
+		t.Fatalf("addQuotaRouteUsageSeconds() failed: %v", err)
+	}
+	if !exceeded {
+		t.Fatal("addQuotaRouteUsageSeconds() did not report quota exhausted")
+	}
+	if snapshot.RegularUsedSeconds != 600 {
+		t.Fatalf("RegularUsedSeconds = %d, want 600", snapshot.RegularUsedSeconds)
 	}
 }
 
@@ -439,6 +445,12 @@ func TestSpecialPeriodResetsWhenSubscriptionPeriodChanges(t *testing.T) {
 func TestQuotaRouteForEntry(t *testing.T) {
 	if got := quotaRouteForEntry("MapPushingFlow"); got != quotaRouteSpecialThenRegular {
 		t.Fatalf("quotaRouteForEntry(MapPushingFlow) = %s, want %s", got, quotaRouteSpecialThenRegular)
+	}
+	if got := quotaRouteForEntry("EquipmentRerollMain"); got != quotaRouteSpecialThenRegular {
+		t.Fatalf("quotaRouteForEntry(EquipmentRerollMain) = %s, want %s", got, quotaRouteSpecialThenRegular)
+	}
+	if got := quotaRouteForEntry("CustomBurstMain"); got != quotaRouteSpecialThenRegular {
+		t.Fatalf("quotaRouteForEntry(CustomBurstMain) = %s, want %s", got, quotaRouteSpecialThenRegular)
 	}
 	if got := quotaRouteForEntry("DailyRewardsMain"); got != quotaRouteRegular {
 		t.Fatalf("quotaRouteForEntry(DailyRewardsMain) = %s, want %s", got, quotaRouteRegular)

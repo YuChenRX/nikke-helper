@@ -75,7 +75,8 @@
         },
         "next": [
             "[JumpBack]ArenaClickCheerReward",
-            "ChampionArenaCompetitionFlow"
+            "ChampionArenaCompetitionFlow",
+            "ChampionArenaEnterChampionsDuel" //兜底
         ]
     },
     "ArenaClickCheerReward": {
@@ -164,7 +165,7 @@
                     32
                 ],
                 "expected": [
-                    "应援"
+                    ".*应.*" //应援
                 ]
             }
         },

@@ -18,8 +18,9 @@
             }
         },
         "next": [
+            "[JumpBack]RedDotClearClickMore",
             "RedDotClearArchivesClickEntry",
-            "CommonEndTask"
+            "CommonClickBlank"
         ]
     },
     "RedDotClearArchivesClickEntry": {
@@ -85,6 +86,7 @@
                 ]
             }
         },
+        "post_wait_freezes": 2000,
         "next": [
             "[JumpBack]ArchivesRedDotClickBottom",
             "[JumpBack]ArchivesRedDotClickTop",
@@ -104,7 +106,7 @@
                     25
                 ],
                 "expected": [
-                    ".*回忆.*"
+                    ".*回.*" //回忆
                 ]
             }
         }
@@ -193,13 +195,16 @@
         "action": {
             "type": "Click"
         },
+        "post_wait_freezes": 1000,
+        "timeout": 30000,
         "next": [
             "[JumpBack]CommonConfirmReward",
             "[JumpBack]CommonConfirmAction",
             "[JumpBack]DialoguesSkipStory",
             "CommonClosePage",
             "[JumpBack]CommonGoBack",
-            "[JumpBack]CommonTouchToContinue"
+            "[JumpBack]CommonTouchToContinue",
+            "[JumpBack]CommonClickBlank"
         ]
     },
     "ArchivesRedDotClickTop": {
@@ -214,7 +219,8 @@
                     33
                 ],
                 "template": [
-                    "Common/RedDot.png"
+                    "Common/RedDot.png",
+                    "Common/New.png"
                 ]
             }
         },
@@ -245,7 +251,8 @@
                     50
                 ],
                 "template": [
-                    "Common/RedDot.png"
+                    "Common/RedDot.png",
+                    "Common/New.png"
                 ]
             }
         },

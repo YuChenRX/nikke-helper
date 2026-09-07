@@ -147,9 +147,9 @@
             "param": {
                 "roi": [
                     743,
-                    450,
+                    425,
                     66,
-                    159
+                    184
                 ],
                 "template": [
                     "Common/MAX.png"
@@ -184,9 +184,9 @@
             "param": {
                 "roi": [
                     479,
-                    523,
+                    508,
                     323,
-                    168
+                    183
                 ],
                 "template": [
                     "Common/ConfirmWithFilledCircle.png"

@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/1204244136/MDA/agent/go-service/common/centerpriority"
+	"github.com/1204244136/MDA/agent/go-service/equipmentreroll"
+	"github.com/1204244136/MDA/agent/go-service/customburst"
 	"github.com/1204244136/MDA/agent/go-service/pkg/resource"
 	"github.com/1204244136/MDA/agent/go-service/taskersink/aspectratio"
 	"github.com/1204244136/MDA/agent/go-service/taskersink/hdrcheck"
@@ -16,6 +18,8 @@ func registerAll() {
 
 	// Common Custom
 	centerpriority.Register()
+	equipmentreroll.Register()
+	customburst.Register()
 
 	// Pre-Check Custom
 	aspectratio.Register()

@@ -478,6 +478,7 @@ Temporary Items
 
 # python
 venv/
+.venv/
 .cache/
 
 # maa-tools
@@ -489,3 +490,6 @@ tests/maatools
 # Local AI/code intelligence preferences
 .codegraph/
 .cursor/
+
+# DSH session artifacts
+.dsh-filess/

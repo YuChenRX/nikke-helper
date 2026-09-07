@@ -19,7 +19,7 @@
     "option": {
         "SmallEventTheme": {
             "type": "select",
-            "default_case": "BitterSpice",
+            "default_case": "GreatVillainUnion",
             "label": "$option.SmallEventTheme.label",
             "cases": [
                 {
@@ -88,6 +88,76 @@
                                     "template": [
                                         "SmallEvent/B-SideIdol/B-SideIdolStageNormalRepeatable.png",
                                         "SmallEvent/B-SideIdol/B-SideIdolStageHardRepeatable.png"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "ProjectMatis",
+                    "label": "$option.SmallEventTheme.ProjectMatis",
+                    "pipeline_override": {
+                        "SmallEventEnterMainPage": {
+                            "recognition": {
+                                "param": {
+                                    "template": [
+                                        "SmallEvent/ProjectMatis/ProjectMatisLogo.png"
+                                    ]
+                                }
+                            }
+                        },
+                        "SmallEventClickStage": {
+                            "recognition": {
+                                "param": {
+                                    "template": [
+                                        "SmallEvent/ProjectMatis/ProjectMatisStory1Stage.png",
+                                        "SmallEvent/ProjectMatis/ProjectMatisStory2StageNormal.png",
+                                        "SmallEvent/ProjectMatis/ProjectMatisStory2StageHard.png"
+                                    ]
+                                }
+                            }
+                        },
+                        "SmallEventClickStageRepeatable": {
+                            "recognition": {
+                                "param": {
+                                    "template": [
+                                        "SmallEvent/ProjectMatis/ProjectMatisStory1StageRepeatable.png",
+                                        "SmallEvent/ProjectMatis/ProjectMatisStory2StageNormalRepeatable.png",
+                                        "SmallEvent/ProjectMatis/ProjectMatisStory2StageHardRepeatable.png"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "GreatVillainUnion",
+                    "label": "$option.SmallEventTheme.GreatVillainUnion",
+                    "pipeline_override": {
+                        "SmallEventEnterMainPage": {
+                            "recognition": {
+                                "param": {
+                                    "template": [
+                                        "SmallEvent/GreatVillainUnion/GreatVillainUnionLogo.png"
+                                    ]
+                                }
+                            }
+                        },
+                        "SmallEventClickStage": {
+                            "recognition": {
+                                "param": {
+                                    "template": [
+                                        "SmallEvent/GreatVillainUnion/GreatVillainUnionStory1Stage.png"
+                                    ]
+                                }
+                            }
+                        },
+                        "SmallEventClickStageRepeatable": {
+                            "recognition": {
+                                "param": {
+                                    "template": [
+                                        "SmallEvent/GreatVillainUnion/GreatVillainUnionStory1StageRepeatable.png"
                                     ]
                                 }
                             }

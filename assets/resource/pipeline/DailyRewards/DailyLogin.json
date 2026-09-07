@@ -42,10 +42,12 @@
         "action": {
             "type": "Click"
         },
+        "post_wait_freezes": 2000,
         "next": [
             "[JumpBack]DailyLoginClaimRewards",
             "[JumpBack]CommonConfirmReward",
-            "CommonClosePage"
+            "CommonClosePage",
+            "CommonGoBack"
         ]
     },
     "DailyLoginClaimRewards": {
