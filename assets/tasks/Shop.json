@@ -7,8 +7,10 @@
             "description": "$task.Shop.description",
             "option": [
                 "CommonShop",
+                "UnionShop",
                 "ArenaShop",
-                "RecyclingShop"
+                "RecyclingShop",
+                "BodyLabelShop"
             ],
             "group": [
                 "daily"
@@ -25,7 +27,9 @@
                     "name": "Yes",
                     "option": [
                         "CommonShopFreeGoods",
-                        "CommonShopCoreDustCase"
+                        "CommonShopCoreDustCase",
+                        "CommonShopProfileCustomPack",
+                        "CommonShopDarlingForADay"
                     ],
                     "pipeline_override": {
                         "CommonShop": {
@@ -53,7 +57,7 @@
                         "ShopPurchaseFreeGoods": {
                             "enabled": true
                         },
-                        "ShopClickFreeReset": {
+                        "ShopClickFreeRefresh": {
                             "enabled": true
                         }
                     }
@@ -64,7 +68,7 @@
                         "ShopPurchaseFreeGoods": {
                             "enabled": false
                         },
-                        "ShopClickFreeReset": {
+                        "ShopClickFreeRefresh": {
                             "enabled": false
                         }
                     }
@@ -87,6 +91,239 @@
                     "name": "Yes",
                     "pipeline_override": {
                         "ShopPurchaseCoreDustCase": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "CommonShopProfileCustomPack": {
+            "type": "switch",
+            "default_case": "No",
+            "label": "$option.CommonShopProfileCustomPack.label",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "ShopPurchaseProfileCustomPack": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "ShopPurchaseProfileCustomPack": {
+                            "enabled": false
+                        }
+                    }
+                }
+            ]
+        },
+        "CommonShopDarlingForADay": {
+            "type": "switch",
+            "default_case": "No",
+            "label": "$option.CommonShopDarlingForADay.label",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "ShopPurchaseDarlingForADay": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "ShopPurchaseDarlingForADay": {
+                            "enabled": false
+                        }
+                    }
+                }
+            ]
+        },
+        "UnionShop": {
+            "type": "switch",
+            "default_case": "No",
+            "label": "$option.UnionShop.label",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "option": [
+                        "UnionShopItemList"
+                    ],
+                    "pipeline_override": {
+                        "UnionShop": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "UnionShop": {
+                            "enabled": false
+                        }
+                    }
+                }
+            ]
+        },
+        "UnionShopItemList": {
+            "type": "checkbox",
+            "default_case": [],
+            "label": "$option.UnionShopItemList.label",
+            "description": "$option.UnionShopItemList.description",
+            "cases": [
+                {
+                    "name": "AssaultBattery",
+                    "label": "$option.UnionShopItemList.AssaultBattery",
+                    "pipeline_override": {
+                        "UnionShopPurchaseAssaultBattery": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "OnslaughtBattery",
+                    "label": "$option.UnionShopItemList.OnslaughtBattery",
+                    "pipeline_override": {
+                        "UnionShopPurchaseOnslaughtBattery": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "ResilienceBattery",
+                    "label": "$option.UnionShopItemList.ResilienceBattery",
+                    "pipeline_override": {
+                        "UnionShopPurchaseResilienceBattery": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "BastionBattery",
+                    "label": "$option.UnionShopItemList.BastionBattery",
+                    "pipeline_override": {
+                        "UnionShopPurchaseBastionBattery": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "BoostBattery",
+                    "label": "$option.UnionShopItemList.BoostBattery",
+                    "pipeline_override": {
+                        "UnionShopPurchaseBoostBattery": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "AugmentationBattery",
+                    "label": "$option.UnionShopItemList.AugmentationBattery",
+                    "pipeline_override": {
+                        "UnionShopPurchaseAugmentationBattery": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "QuantumBattery",
+                    "label": "$option.UnionShopItemList.QuantumBattery",
+                    "pipeline_override": {
+                        "UnionShopPurchaseQuantumBattery": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "VigorBattery",
+                    "label": "$option.UnionShopItemList.VigorBattery",
+                    "pipeline_override": {
+                        "UnionShopPurchaseVigorBattery": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "EnduranceBattery",
+                    "label": "$option.UnionShopItemList.EnduranceBattery",
+                    "pipeline_override": {
+                        "UnionShopPurchaseEnduranceBattery": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "HealingBattery",
+                    "label": "$option.UnionShopItemList.HealingBattery",
+                    "pipeline_override": {
+                        "UnionShopPurchaseHealingBattery": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "TemperingBattery",
+                    "label": "$option.UnionShopItemList.TemperingBattery",
+                    "pipeline_override": {
+                        "UnionShopPurchaseTemperingBattery": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "AssistBattery",
+                    "label": "$option.UnionShopItemList.AssistBattery",
+                    "pipeline_override": {
+                        "UnionShopPurchaseAssistBattery": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "DestructionBattery",
+                    "label": "$option.UnionShopItemList.DestructionBattery",
+                    "pipeline_override": {
+                        "UnionShopPurchaseDestructionBattery": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "PiercingBattery",
+                    "label": "$option.UnionShopItemList.PiercingBattery",
+                    "pipeline_override": {
+                        "UnionShopPurchasePiercingBattery": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "RuptureBattery",
+                    "label": "$option.UnionShopItemList.RuptureBattery",
+                    "pipeline_override": {
+                        "UnionShopPurchaseRuptureBattery": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "StealthBattery",
+                    "label": "$option.UnionShopItemList.StealthBattery",
+                    "pipeline_override": {
+                        "UnionShopPurchaseStealthBattery": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "DiffusionBattery",
+                    "label": "$option.UnionShopItemList.DiffusionBattery",
+                    "pipeline_override": {
+                        "UnionShopPurchaseDiffusionBattery": {
                             "enabled": true
                         }
                     }
@@ -177,6 +414,24 @@
                             "enabled": true
                         }
                     }
+                },
+                {
+                    "name": "ArenaShopProfileCustomPack",
+                    "label": "$option.ArenaShopItemList.ArenaShopProfileCustomPack",
+                    "pipeline_override": {
+                        "ArenaShopPurchaseProfileCustomPack": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "ArenaShopManufacturerArmsFurnace",
+                    "label": "$option.ArenaShopItemList.ArenaShopManufacturerArmsFurnace",
+                    "pipeline_override": {
+                        "ArenaShopPurchaseManufacturerArmsFurnace": {
+                            "enabled": true
+                        }
+                    }
                 }
             ]
         },
@@ -250,10 +505,55 @@
                     }
                 },
                 {
-                    "name": "Voucher",
-                    "label": "$option.RecyclingShopList.Voucher",
+                    "name": "DarlingForADay",
+                    "label": "$option.RecyclingShopList.DarlingForADay",
                     "pipeline_override": {
-                        "ShopPurchaseVoucher": {
+                        "RecyclingShopPurchaseDarlingForADay": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "ElysionVIPBuffetVoucher",
+                    "label": "$option.RecyclingShopList.ElysionVIPBuffetVoucher",
+                    "pipeline_override": {
+                        "RecyclingShopPurchaseElysionVIPBuffetVoucher": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "MissilisVIPCard",
+                    "label": "$option.RecyclingShopList.MissilisVIPCard",
+                    "pipeline_override": {
+                        "RecyclingShopPurchaseMissilisVIPCard": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "TetraVIPSpaVoucher",
+                    "label": "$option.RecyclingShopList.TetraVIPSpaVoucher",
+                    "pipeline_override": {
+                        "RecyclingShopPurchaseTetraVIPSpaVoucher": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "PilgrimSupplySetVoucher",
+                    "label": "$option.RecyclingShopList.PilgrimSupplySetVoucher",
+                    "pipeline_override": {
+                        "RecyclingShopPurchasePilgrimSupplySetVoucher": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "AbnormalAnnualTicket",
+                    "label": "$option.RecyclingShopList.AbnormalAnnualTicket",
+                    "pipeline_override": {
+                        "RecyclingShopPurchaseAbnormalAnnualTicket": {
                             "enabled": true
                         }
                     }
@@ -263,6 +563,51 @@
                     "label": "$option.RecyclingShopList.UpgradeMaterials",
                     "pipeline_override": {
                         "ShopPurchaseUpgradeMaterials": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "BodyLabelShop": {
+            "type": "switch",
+            "default_case": "No",
+            "label": "$option.BodyLabelShop.label",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "option": [
+                        "BodyLabelShopItemList"
+                    ],
+                    "pipeline_override": {
+                        "BodyLabelShop": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "BodyLabelShop": {
+                            "enabled": false
+                        }
+                    }
+                }
+            ]
+        },
+        "BodyLabelShopItemList": {
+            "type": "checkbox",
+            "default_case": [
+                "DiscountedItem"
+            ],
+            "label": "$option.BodyLabelShopItemList.label",
+            "description": "$option.BodyLabelShopItemList.description",
+            "cases": [
+                {
+                    "name": "DiscountedItem",
+                    "label": "$option.BodyLabelShopItemList.DiscountedItem",
+                    "pipeline_override": {
+                        "BodyLabelShopPurchaseDiscountedItem": {
                             "enabled": true
                         }
                     }
