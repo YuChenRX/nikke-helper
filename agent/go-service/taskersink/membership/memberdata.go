@@ -125,13 +125,14 @@ type MembershipStatus struct {
 }
 
 var (
-	cachedStatus      *MembershipStatus
-	cachedStatusMu    sync.RWMutex
-	cachedStatusTime  time.Time
-	membershipCheckMu sync.Mutex
-	cachedDeviceCode  DeviceCodeV7
-	deviceCodeCached  bool
-	deviceCodeMu      sync.Mutex
+	cachedStatus         *MembershipStatus
+	cachedStatusMu       sync.RWMutex
+	cachedStatusTime     time.Time
+	cachedStatusDuration time.Duration
+	membershipCheckMu    sync.Mutex
+	cachedDeviceCode     DeviceCodeV7
+	deviceCodeCached     bool
+	deviceCodeMu         sync.Mutex
 )
 
 var (
@@ -164,7 +165,11 @@ func GetMembershipStatus() *MembershipStatus {
 func getCachedStatus() *MembershipStatus {
 	cachedStatusMu.RLock()
 	defer cachedStatusMu.RUnlock()
-	if cachedStatus == nil || time.Since(cachedStatusTime) >= cacheExpiry {
+	expiry := cachedStatusDuration
+	if expiry <= 0 {
+		expiry = cacheExpiry
+	}
+	if cachedStatus == nil || time.Since(cachedStatusTime) >= expiry {
 		return nil
 	}
 	return cachedStatus
@@ -208,9 +213,14 @@ func checkMembership() *MembershipStatus {
 }
 
 func cacheStatus(status *MembershipStatus) {
+	cacheStatusWithDuration(status, cacheExpiry)
+}
+
+func cacheStatusWithDuration(status *MembershipStatus, duration time.Duration) {
 	cachedStatusMu.Lock()
 	cachedStatus = status
 	cachedStatusTime = time.Now()
+	cachedStatusDuration = duration
 	cachedStatusMu.Unlock()
 }
 
@@ -290,6 +300,7 @@ func fetchMemberStatus(deviceCode DeviceCodeV7) (*MemberStatusResponse, error) {
 	}
 
 	var lastErr error
+	fallbackTried := false
 	for attempt := 1; attempt <= maxFetchAttempts; attempt++ {
 		startedAt := time.Now()
 		status, statusCode, err := fetchMemberStatusOnce(client, payload)
@@ -316,6 +327,18 @@ func fetchMemberStatus(deviceCode DeviceCodeV7) (*MemberStatusResponse, error) {
 		if !shouldRetryFetch(statusCode, err) || attempt == maxFetchAttempts {
 			break
 		}
+
+		if !fallbackTried {
+			req, _ := http.NewRequest("POST", MemberStatusURL, nil)
+			if fallbackProxy := detectFallbackProxy(req); fallbackProxy != nil {
+				log.Info().
+					Str("fallback_proxy", fallbackProxy.String()).
+					Msg("Attempting retry using detected local fallback proxy")
+				transport.Proxy = http.ProxyURL(fallbackProxy)
+				fallbackTried = true
+			}
+		}
+
 		time.Sleep(time.Duration(attempt*300) * time.Millisecond)
 	}
 

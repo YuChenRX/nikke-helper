@@ -3,10 +3,13 @@
 package membership
 
 import (
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
+	"github.com/rs/zerolog/log"
 	"golang.org/x/sys/windows/registry"
 )
 
@@ -48,7 +51,14 @@ func resolveSystemProxy(req *http.Request) (*url.URL, error) {
 		return nil, nil
 	}
 
-	return parseWindowsProxyServer(req.URL.Scheme, serverStr)
+	proxyURL, err := parseWindowsProxyServer(req.URL.Scheme, serverStr)
+	if err == nil && proxyURL != nil {
+		log.Debug().
+			Str("proxy", proxyURL.String()).
+			Str("host", req.URL.Host).
+			Msg("Using Windows system proxy for membership verification")
+	}
+	return proxyURL, err
 }
 
 func isProxyOverridden(hostname string, override string) bool {
@@ -75,7 +85,7 @@ func isProxyOverridden(hostname string, override string) bool {
 		if strings.HasPrefix(p, "*.") && strings.HasSuffix(lowerHost, p[1:]) {
 			return true
 		}
-		if strings.HasPrefix(lowerHost, p) {
+		if strings.HasSuffix(p, "*") && strings.HasPrefix(lowerHost, strings.TrimSuffix(p, "*")) {
 			return true
 		}
 	}
@@ -98,11 +108,15 @@ func parseWindowsProxyServer(scheme string, serverStr string) (*url.URL, error) 
 			}
 		}
 		if target == "" {
-			// 如果没有找到特定 scheme 的代理，尝试 http=
+			// 如果没有找到特定 scheme 的代理，尝试 http= 或 socks=
 			for _, entry := range entries {
 				e := strings.TrimSpace(entry)
 				if strings.HasPrefix(strings.ToLower(e), "http=") {
 					target = e[5:]
+					break
+				}
+				if strings.HasPrefix(strings.ToLower(e), "socks=") {
+					target = "socks5://" + e[6:]
 					break
 				}
 			}
@@ -122,3 +136,48 @@ func parseWindowsProxyServer(scheme string, serverStr string) (*url.URL, error) 
 
 	return url.Parse(target)
 }
+
+// detectFallbackProxy 在直连请求失败时，探测本地是否有可用的代理（如 Clash 正在运行但 ProxyEnable 被 UU 加速器等关闭）
+func detectFallbackProxy(req *http.Request) *url.URL {
+	if req == nil || req.URL == nil {
+		return nil
+	}
+
+	var candidates []string
+
+	// 1. 尝试注册表里配置的 ProxyServer（即使 ProxyEnable 为 0）
+	k, err := registry.OpenKey(
+		registry.CURRENT_USER,
+		`Software\Microsoft\Windows\CurrentVersion\Internet Settings`,
+		registry.QUERY_VALUE,
+	)
+	if err == nil {
+		if serverStr, _, err := k.GetStringValue("ProxyServer"); err == nil && strings.TrimSpace(serverStr) != "" {
+			candidates = append(candidates, strings.TrimSpace(serverStr))
+		}
+		k.Close()
+	}
+
+	// 2. 常见本地代理端口（Clash Verge / Mihomo: 7897, Clash / v2rayN: 7890）
+	candidates = append(candidates, "127.0.0.1:7897", "127.0.0.1:7890")
+
+	for _, cand := range candidates {
+		proxyURL, err := parseWindowsProxyServer(req.URL.Scheme, cand)
+		if err != nil || proxyURL == nil {
+			continue
+		}
+		hostPort := proxyURL.Host
+		if hostPort == "" {
+			continue
+		}
+		// 快速探测该本地端口是否处于监听状态
+		conn, err := net.DialTimeout("tcp", hostPort, 120*time.Millisecond)
+		if err == nil {
+			conn.Close()
+			return proxyURL
+		}
+	}
+
+	return nil
+}
+
