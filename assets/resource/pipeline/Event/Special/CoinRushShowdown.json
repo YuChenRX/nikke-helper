@@ -285,8 +285,8 @@
         },
         "next": [
             "LargeEventMainPageEntered",
-            "CoinRushShowdownMiniGameEventGoBack", //兜底
-            "[JumpBack]CommonConfirmAction"
+            "[JumpBack]CommonConfirmAction",
+            "CoinRushShowdownMiniGameEventGoBack" //兜底
         ]
     }
 }
