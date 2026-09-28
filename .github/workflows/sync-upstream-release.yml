@@ -32,7 +32,35 @@ jobs:
         id: merge
         run: |
           before=$(git rev-parse HEAD)
-          git merge --no-edit upstream/main
+
+          # fork 的已知定制文件：与上游冲突时保留 fork 版本
+          #   memberdata.go = 完全离线会员模式（移除 doropay.top 网络校验与设备码上报）
+          KNOWN_FORK_FILES=(
+            "agent/go-service/taskersink/membership/memberdata.go"
+          )
+
+          if git merge --no-edit upstream/main; then
+            echo "合并干净，无冲突"
+          else
+            echo "合并出现冲突，尝试按白名单保留 fork 版本："
+            for f in "${KNOWN_FORK_FILES[@]}"; do
+              if git diff --name-only --diff-filter=U -- "$f" | grep -q .; then
+                git checkout --ours -- "$f"
+                git add -- "$f"
+                echo "  已保留 fork 版本：$f"
+              fi
+            done
+
+            remaining="$(git diff --name-only --diff-filter=U || true)"
+            if [ -n "$remaining" ]; then
+              echo "::error::存在未处理的合并冲突，需要人工解决："
+              echo "$remaining"
+              exit 1
+            fi
+
+            git commit --no-edit -m "chore: 合并上游 main（白名单文件保留 fork 版本）"
+          fi
+
           after=$(git rev-parse HEAD)
           echo "changed=$([ "$before" != "$after" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
           echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
