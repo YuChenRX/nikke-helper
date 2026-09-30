@@ -205,7 +205,11 @@ func (t *RuntimeTracker) start(tasker *maa.Tasker, detail maa.TaskerTaskDetail) 
 		return
 	}
 
-	multiplier := multiplierForEntry(detail.Entry, snapshot.SpecialRemainingSeconds > 0 || snapshot.EventRemainingSeconds > 0)
+	// 启动时展示当前常规池倍率；实际跨池扣减时由扣费结果重新计算。
+	multiplier := regularQuotaMultiplier(detail.Entry)
+	if snapshot.RegularRemainingSeconds <= 0 {
+		multiplier = unmultipliedQuotaMultiplier()
+	}
 
 	now := time.Now()
 
@@ -241,12 +245,12 @@ func (t *RuntimeTracker) start(tasker *maa.Tasker, detail maa.TaskerTaskDetail) 
 		Str("multiplier_reason", multiplier.Reason).
 		Bool("unlimited_runtime", snapshot.UnlimitedRuntime).
 		Msg("RuntimeTracker: started quota tracking")
-	if isHighConsumptionEntry(detail.Entry) && snapshot.SpecialRemainingSeconds <= 0 && snapshot.EventRemainingSeconds <= 0 {
+	if multiplier.totalPermille() > multiplierScale {
 		log.Info().
 			Uint64("task_id", detail.TaskID).
 			Str("entry", detail.Entry).
-			Int("quota_multiplier", 5).
-			Msg("RuntimeTracker: high consumption task without special quota is 5x")
+			Int64("total_multiplier_permille", multiplier.totalPermille()).
+			Msg("RuntimeTracker: high consumption task charges regular quota at 5x")
 	}
 
 	if snapshot.UnlimitedRuntime {
@@ -370,7 +374,7 @@ func (t *RuntimeTracker) consumeTick(status *MembershipStatus, route quotaRoute,
 	}
 
 	if multiplier.totalPermille() > multiplierScale && oldMultiplier.totalPermille() <= multiplierScale {
-		printNoSpecialQuota5x()
+		printRegularQuota5x()
 	}
 
 	t.mu.Lock()
@@ -420,8 +424,8 @@ func printQuotaExhausted(snapshot QuotaSnapshot) {
 	maafocus.PrintLargeContentTrimNewline(formatQuotaDeniedMessage(snapshot))
 }
 
-func printNoSpecialQuota5x() {
-	maafocus.PrintLargeContentTrimNewline(i18n.T("tasker.membership_check.no_special_quota_5x_multiplier"))
+func printRegularQuota5x() {
+	maafocus.PrintLargeContentTrimNewline(i18n.T("tasker.membership_check.regular_quota_5x_multiplier"))
 }
 
 func printMembershipVerificationUnavailable() {
