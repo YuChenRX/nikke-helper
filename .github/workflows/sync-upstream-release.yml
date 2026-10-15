@@ -12,11 +12,15 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    env:
+      HAS_SYNC_TOKEN: ${{ secrets.UPSTREAM_SYNC_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           submodules: recursive
+          # 默认令牌不能推送工作流变更；专用令牌需具备 Workflows 写权限。
+          token: ${{ secrets.UPSTREAM_SYNC_TOKEN || github.token }}
 
       - name: Configure git
         run: |
@@ -67,7 +71,9 @@ jobs:
 
       - name: Push branch
         if: steps.merge.outputs.changed == 'true'
-        run: git push origin HEAD:main
+        run: |
+          python tools/check_sync_permissions.py
+          git push origin HEAD:main
 
       - name: Create release tag
         if: steps.merge.outputs.changed == 'true'
@@ -79,8 +85,9 @@ jobs:
           git push origin "$tag"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
+      # PAT 推送标签会自动触发 install；默认令牌才需要显式 dispatch。
       - name: Trigger release build
-        if: steps.merge.outputs.changed == 'true'
+        if: steps.merge.outputs.changed == 'true' && env.HAS_SYNC_TOKEN != 'true'
         run: gh workflow run install.yml --repo "$GITHUB_REPOSITORY" --ref "${{ steps.tag.outputs.tag }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
