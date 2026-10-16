@@ -1,7 +1,6 @@
 package membership
 
 import (
-	"errors"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -87,27 +86,29 @@ func TestStatusFromResponseFallsBackToTierSpecialQuota(t *testing.T) {
 	}
 }
 
-func TestCheckMembershipUnavailableFallsBackToFreeStatus(t *testing.T) {
+func TestCheckMembershipOfflineDoesNotUseExternalIdentity(t *testing.T) {
 	resetMembershipTestGlobals(t)
 	appVersion = "1.0.0"
 	clientName = "MFAWPF"
 	generateDeviceCodeV7 = func() DeviceCodeV7 {
-		return DeviceCodeV7{CPUHash: "cpu-hash"}
+		t.Error("离线模式不应生成设备码")
+		return DeviceCodeV7{}
 	}
 	fetchMemberStatusFn = func(DeviceCodeV7) (*MemberStatusResponse, error) {
-		return nil, errors.New("temporary service failure")
+		t.Error("离线模式不应联网校验")
+		return nil, nil
 	}
 
 	status := checkMembership()
 
-	if !status.VerificationUnavailable {
-		t.Fatalf("VerificationUnavailable = false, want true")
+	if status.VerificationUnavailable {
+		t.Fatal("离线模式不是网络校验失败，不应标记 VerificationUnavailable")
 	}
 	if status.UpdateRequired {
 		t.Fatalf("UpdateRequired = true, want false")
 	}
-	if status.IsMember {
-		t.Fatalf("IsMember = true, want false")
+	if !status.IsMember || !status.AllFeaturesUnlocked || !status.UnlimitedRuntime {
+		t.Fatal("离线状态未保持 fork 既有行为")
 	}
 	if status.TierCode != "orange_free" {
 		t.Fatalf("TierCode = %q, want orange_free", status.TierCode)
@@ -115,12 +116,12 @@ func TestCheckMembershipUnavailableFallsBackToFreeStatus(t *testing.T) {
 	if status.RegularDailyRuntimeMinutes != 10 {
 		t.Fatalf("RegularDailyRuntimeMinutes = %d, want 10", status.RegularDailyRuntimeMinutes)
 	}
-	if status.DeviceCode.CPUHash != "cpu-hash" {
-		t.Fatalf("DeviceCode.CPUHash = %q, want cpu-hash", status.DeviceCode.CPUHash)
+	if status.DeviceCode != (DeviceCodeV7{}) {
+		t.Fatal("离线状态不应包含设备标识")
 	}
 }
 
-func TestGetMembershipStatusCachesUnmatchedFreeStatus(t *testing.T) {
+func TestGetMembershipStatusCachesOfflineStatus(t *testing.T) {
 	resetMembershipTestGlobals(t)
 	appVersion = "1.0.0"
 	clientName = "MFAWPF"
@@ -142,15 +143,12 @@ func TestGetMembershipStatusCachesUnmatchedFreeStatus(t *testing.T) {
 	if first != second {
 		t.Fatal("GetMembershipStatus() did not return the cached free status")
 	}
-	if deviceCodeCalls != 1 {
-		t.Fatalf("device code generated %d times, want 1", deviceCodeCalls)
-	}
-	if fetchCalls != 1 {
-		t.Fatalf("membership status fetched %d times, want 1", fetchCalls)
+	if deviceCodeCalls != 0 || fetchCalls != 0 {
+		t.Fatalf("离线缓存不应触发外部校验：设备码 %d 次，网络 %d 次", deviceCodeCalls, fetchCalls)
 	}
 }
 
-func TestGetMembershipStatusReusesDeviceCodeAfterStatusExpiry(t *testing.T) {
+func TestGetMembershipStatusRefreshesOfflineStatusAfterExpiry(t *testing.T) {
 	resetMembershipTestGlobals(t)
 	appVersion = "1.0.0"
 	clientName = "MFAWPF"
@@ -166,53 +164,73 @@ func TestGetMembershipStatusReusesDeviceCodeAfterStatusExpiry(t *testing.T) {
 		return &MemberStatusResponse{Matched: false, Score: 75}, nil
 	}
 
-	GetMembershipStatus()
+	first := GetMembershipStatus()
 	cachedStatusMu.Lock()
 	cachedStatusTime = time.Now().Add(-cacheExpiry)
+	cachedStatusDuration = cacheExpiry
 	cachedStatusMu.Unlock()
-	GetMembershipStatus()
+	second := GetMembershipStatus()
 
-	if deviceCodeCalls != 1 {
-		t.Fatalf("device code generated %d times, want 1", deviceCodeCalls)
+	if first == second || second.TierCode != "orange_free" || !second.UnlimitedRuntime {
+		t.Fatal("缓存过期后应重新生成有效离线状态")
 	}
-	if fetchCalls != 2 {
-		t.Fatalf("membership status fetched %d times, want 2", fetchCalls)
+	if deviceCodeCalls != 0 || fetchCalls != 0 {
+		t.Fatalf("离线刷新不应触发外部校验：设备码 %d 次，网络 %d 次", deviceCodeCalls, fetchCalls)
 	}
 }
 
-func TestGetMembershipStatusCoalescesConcurrentChecks(t *testing.T) {
+func TestGetMembershipStatusCoalescesConcurrentOfflineChecks(t *testing.T) {
 	resetMembershipTestGlobals(t)
 	appVersion = "1.0.0"
 	clientName = "MFAWPF"
 
-	var fetchCalls atomic.Int32
+	var deviceCodeCalls, fetchCalls atomic.Int32
 	generateDeviceCodeV7 = func() DeviceCodeV7 {
+		deviceCodeCalls.Add(1)
 		return DeviceCodeV7{CPUHash: "cpu-hash"}
 	}
-	started := make(chan struct{})
-	release := make(chan struct{})
 	fetchMemberStatusFn = func(DeviceCodeV7) (*MemberStatusResponse, error) {
-		if fetchCalls.Add(1) == 1 {
-			close(started)
-		}
-		<-release
+		fetchCalls.Add(1)
 		return &MemberStatusResponse{Matched: false, Score: 75}, nil
 	}
 
 	const callers = 8
 	var wg sync.WaitGroup
+	start := make(chan struct{})
+	results := make(chan *MembershipStatus, callers)
 	wg.Add(callers)
 	for range callers {
 		go func() {
 			defer wg.Done()
-			GetMembershipStatus()
+			<-start
+			results <- GetMembershipStatus()
 		}()
 	}
-	<-started
-	close(release)
-	wg.Wait()
-
-	if got := fetchCalls.Load(); got != 1 {
-		t.Fatalf("membership status fetched %d times, want 1", got)
+	close(start)
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("并发离线状态查询超时")
+	}
+	close(results)
+	var first *MembershipStatus
+	for status := range results {
+		if status == nil {
+			t.Fatal("并发查询返回空状态")
+		}
+		if first == nil {
+			first = status
+		}
+		if status != first {
+			t.Fatal("并发查询未共用同一缓存状态")
+		}
+	}
+	if deviceCodeCalls.Load() != 0 || fetchCalls.Load() != 0 {
+		t.Fatal("并发离线查询不应生成设备码或发起网络校验")
 	}
 }
