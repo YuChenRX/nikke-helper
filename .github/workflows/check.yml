@@ -7,6 +7,11 @@ on:
     paths:
       - ".github/workflows/check.yml"
       - "assets/**"
+      - "tools/schema/**"
+      - "scripts/check-theme-sync.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - "maatools.config.mts"
       - "**.py"
       - "pyproject.toml"
       - "uv.lock"
@@ -16,6 +21,11 @@ on:
     paths:
       - ".github/workflows/check.yml"
       - "assets/**"
+      - "tools/schema/**"
+      - "scripts/check-theme-sync.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - "maatools.config.mts"
       - "**.py"
       - "pyproject.toml"
       - "uv.lock"
@@ -40,6 +50,11 @@ jobs:
           npm ci
           npx @nekosu/maa-tools check
 
+      - name: Check event theme consistency
+        run: |
+          npm run test:theme
+          npm run check:theme
+
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
@@ -48,6 +63,9 @@ jobs:
       - name: Setup uv
         uses: astral-sh/setup-uv@v9.0.0
 
+      - name: Test event template preparation
+        run: uv run --frozen --only-group schema --with opencv-python python .agents/skills/mda-event-update/scripts/test_prepare_templates.py
+
       - name: Validate JSON Schema
         run: |
-          uv run --frozen --only-group schema python tools/validate_schema.py --resource-dirs assets/resource --exclude-dirs assets/resource/announcement --interface-files assets/interface.json
+          uv run --frozen --only-group schema python tools/validate_schema.py --resource-dirs assets/resource --exclude-dirs assets/resource/announcement --interface-files assets/interface.json --task-dirs assets/tasks

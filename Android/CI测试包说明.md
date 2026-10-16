@@ -17,10 +17,10 @@ artifact 保留 14 天；下载的文件可自行长期保存。
 
 PR 改动 Android、资源、Go Agent 或构建工具时自动检查并产出独立 PR 包：
 
-| 来源 | 包名 | 签名及用途 |
-| --- | --- | --- |
-| 手动运行 | `com.aliothmoon.maafw.mda.membershiptest` | 固定测试证书，适合连续真机会员联调 |
-| PR | `com.aliothmoon.maafw.mda.membershippr` | runner 临时 debug 证书，适合验证能否构建及单次测试 |
+| 来源     | 包名                                      | 签名及用途                                         |
+| -------- | ----------------------------------------- | -------------------------------------------------- |
+| 手动运行 | `com.aliothmoon.maafw.mda.membershiptest` | 固定测试证书，适合连续真机会员联调                 |
+| PR       | `com.aliothmoon.maafw.mda.membershippr`   | runner 临时 debug 证书，适合验证能否构建及单次测试 |
 
 PR 包不会覆盖会员联调版，每次 PR 构建的证书可能不同，不能保证互相覆盖安装。
 不要把 PR 包用于已有会员的连续换包验证，优先分发手动构建的包。
@@ -31,13 +31,13 @@ PR 包不会覆盖会员联调版，每次 PR 构建的证书可能不同，不�
 
 维护者在仓库 Settings → Secrets and variables → Actions 配置一次：
 
-| 类型 | 名称 | 内容 |
-| --- | --- | --- |
-| Secret | `ANDROID_TEST_KEYSTORE_BASE64` | 固定测试 keystore 文件的 Base64，单行 |
-| Secret | `ANDROID_TEST_STORE_PASSWORD` | keystore 密码 |
-| Secret | `ANDROID_TEST_KEY_ALIAS` | 签名 alias |
-| Secret | `ANDROID_TEST_KEY_PASSWORD` | 对应私钥密码 |
-| Variable | `ANDROID_TEST_CERT_SHA256` | 证书 SHA256 指纹，可带冒号 |
+| 类型     | 名称                           | 内容                                  |
+| -------- | ------------------------------ | ------------------------------------- |
+| Secret   | `ANDROID_TEST_KEYSTORE_BASE64` | 固定测试 keystore 文件的 Base64，单行 |
+| Secret   | `ANDROID_TEST_STORE_PASSWORD`  | keystore 密码                         |
+| Secret   | `ANDROID_TEST_KEY_ALIAS`       | 签名 alias                            |
+| Secret   | `ANDROID_TEST_KEY_PASSWORD`    | 对应私钥密码                          |
+| Variable | `ANDROID_TEST_CERT_SHA256`     | 证书 SHA256 指纹，可带冒号            |
 
 优先沿用之前手机上会员联调版的签名 keystore，避免覆盖安装失败及签名相关的 App Android ID 改变。
 配置前用 `keytool -list -v -keystore <文件> -alias <alias>` 核对证书指纹。
@@ -62,11 +62,20 @@ CI 不修改旁边的 MaaFwApp 仓库，独立检出到 runner 的 `.cache/andro
 
 Agent 阶段执行 Go vet/test、Android 资源和会员桥接相关的 Python 回归、实际 Java 兼容层测试，
 然后交叉编译并检查 ELF 架构、Android linker 和注入版本。
+同时下载同一框架版本的 Linux 主机运行时，执行真实 Agent IPC 回归：
+先在任务事件中反向读取控制器，再验证会员计时产生实际扣减与结束结算。
+这个测试使用空白控制器和本地会员样例，不访问会员服务，不连接手机。
 APK 阶段初始化 OCR 模型，部署锁定框架，应用身份桥接，再验证包名、版本、arm64 库、OCR、
 会员开关、入包 Agent build ID、签名及 16KB ZIP 对齐，最后生成可追溯的 artifact。
 
 跨仓库 DoroPay Miniflare 测试依赖旁边的 DoroPay 源码与 npm 依赖，当前没有纳入此 CI；
 现有 Go 映射测试和共享向量仍会执行。服务端六字段协议及数据库维持原状。
 CI 成功说明构建及这些静态/离线检查通过，会员开通、重启与换绑仍需真机验证。
+
+维护者持有故障现场图时，还可以设置 `MDA_MAA_LIB`、`MDA_BATTLE_SCREENSHOT`、
+`MDA_SHOP_SCREENSHOT`，从仓库根目录运行
+`go -C agent/go-service test . -run '^TestAndroidPipelineReplay$' -count=1`。
+它只回放识别和模拟点击：验证手机战斗 HUD 的正反例、商店漏点重试和重试上限。
+现场图保存在本机忽略目录，不能纳入提交；志愿者不需要运行这些命令。
 
 不需要为了测试 CI 在本机重新编译 APK，也不需要触发桌面 install/release 工作流。
