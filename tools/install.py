@@ -9,6 +9,11 @@ import json
 
 from configure import configure_ocr_model
 
+if __package__:
+    from .generate_zh_tw import generate_zh_tw
+else:
+    from generate_zh_tw import generate_zh_tw
+
 try:
     from cli_support import configure_utf8_stdio
 except ImportError:
@@ -93,6 +98,8 @@ def install_resource():
 
     with open(install_path / "interface.json", "w", encoding="utf-8") as f:
         json.dump(interface, f, ensure_ascii=False, indent=4)
+
+    generate_zh_tw(install_path)
 
 
 def install_chores():
