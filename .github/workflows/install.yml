@@ -324,25 +324,9 @@ jobs:
             cat RELEASE_BODY.md
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
-  # 正式版的 Android APK：与桌面包同一 tag、同一 MaaFramework 版本，一起进 Release
-  android:
-    if: ${{ needs.meta.outputs.is_release == 'true' }}
-    needs: meta
-    uses: ./.github/workflows/android.yml
-    with:
-      assemble: release
-      ref: ${{ github.ref }}
-      tag: ${{ needs.meta.outputs.tag }}
-      maafw_version: ${{ needs.meta.outputs.maafw_version }}
-    secrets:
-      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-      ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
-      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-
   release:
     if: ${{ needs.meta.outputs.is_release == 'true' }}
-    needs: [ meta, install, changelog, android ]
+    needs: [ meta, install, changelog ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v7

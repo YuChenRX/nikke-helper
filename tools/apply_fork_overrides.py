@@ -27,19 +27,27 @@ def patch_interface(path: Path) -> bool:
 
 def patch_workflow(path: Path) -> bool:
     text = path.read_text(encoding="utf-8")
-    if re.search(r"^permissions:", text, re.MULTILINE):
-        return False
-    lines = text.splitlines(keepends=True)
-    insert_at = None
-    for index, line in enumerate(lines):
-        if line.strip() == "name: install":
-            insert_at = index + 1
-            break
-    if insert_at is None:
-        insert_at = 0
-    lines.insert(insert_at, "\n" + PERMISSIONS)
-    path.write_text("".join(lines), encoding="utf-8")
-    return True
+    changed = False
+    if not re.search(r"^permissions:", text, re.MULTILINE):
+        lines = text.splitlines(keepends=True)
+        insert_at = next((i + 1 for i, line in enumerate(lines) if line.strip() == "name: install"), 0)
+        lines.insert(insert_at, "\n" + PERMISSIONS)
+        text = "".join(lines)
+        changed = True
+    # fork 没有安卓签名密钥，Release 不跑 android 作业，只发桌面包。
+    if re.search(r"^  android:", text, re.MULTILINE):
+        lines = text.splitlines(keepends=True)
+        start = next(i for i, line in enumerate(lines) if line.rstrip() == "  android:")
+        while start > 0 and lines[start - 1].lstrip().startswith("#"):
+            start -= 1
+        end = next(i for i in range(start + 1, len(lines)) if lines[i].startswith("  release:"))
+        del lines[start:end]
+        text = "".join(lines)
+        text = text.replace("needs: [ meta, install, changelog, android ]", "needs: [ meta, install, changelog ]")
+        changed = True
+    if changed:
+        path.write_text(text, encoding="utf-8")
+    return changed
 
 
 def main() -> int:
