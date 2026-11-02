@@ -50,6 +50,39 @@ def patch_workflow(path: Path) -> bool:
     return changed
 
 
+PACKAGING = """      - name: Prepare release assets
+        shell: bash
+        run: |
+          # fork: 统一产出单个桌面包，兼容下载产物的平铺/子目录两种布局
+          set -euo pipefail
+          tag="${{ needs.meta.outputs.tag }}"
+          work="$(mktemp -d)"
+          shopt -s nullglob
+          for entry in assets/*; do
+            if [ -d "$entry" ]; then cp -a "$entry/." "$work/"; else cp -a "$entry" "$work/"; fi
+          done
+          rm -rf assets
+          mkdir -p assets
+          (cd "$work" && zip -qr "$GITHUB_WORKSPACE/assets/MDA-win-x86_64-$tag.zip" .)
+          rm -rf "$work"
+          ls -la assets
+"""
+
+
+def patch_packaging(path: Path) -> bool:
+    text = path.read_text(encoding="utf-8")
+    if "# fork: 统一产出单个桌面包" in text:
+        return False
+    lines = text.splitlines(keepends=True)
+    start = next((i for i, line in enumerate(lines) if line.startswith("      - name: Prepare release assets")), None)
+    if start is None:
+        return False
+    end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("      - ")), len(lines))
+    lines[start:end] = [PACKAGING]
+    path.write_text("".join(lines), encoding="utf-8")
+    return True
+
+
 def main() -> int:
     changed = []
     interface = ROOT / "assets" / "interface.json"
@@ -58,6 +91,8 @@ def main() -> int:
     workflow = ROOT / ".github" / "workflows" / "install.yml"
     if workflow.exists() and patch_workflow(workflow):
         changed.append(str(workflow.relative_to(ROOT)))
+    if workflow.exists() and patch_packaging(workflow):
+        changed.append(str(workflow.relative_to(ROOT)) + " (packaging)")
     print("fork 定制回写：" + (", ".join(changed) if changed else "无需改动"))
     return 0
 

@@ -338,21 +338,19 @@ jobs:
       - name: Prepare release assets
         shell: bash
         run: |
+          # fork: 统一产出单个桌面包，兼容下载产物的平铺/子目录两种布局
           set -euo pipefail
-          cd assets
-          # Android APK 直接作为 Release 资产，不再压缩；构建信息留在 Actions artifact。
-          for dir in MDA-android-arm64-v8a-*; do
-            [ -d "$dir" ] || continue
-            find "$dir" -maxdepth 1 -name '*.apk' -exec mv {} . \;
-            rm -rf "$dir"
+          tag="${{ needs.meta.outputs.tag }}"
+          work="$(mktemp -d)"
+          shopt -s nullglob
+          for entry in assets/*; do
+            if [ -d "$entry" ]; then cp -a "$entry/." "$work/"; else cp -a "$entry" "$work/"; fi
           done
-          for dir in *; do
-            [ -d "$dir" ] || continue
-            (cd "$dir" && zip -r "../$dir.zip" .)
-            rm -rf "$dir"
-          done
-          ls -la
-
+          rm -rf assets
+          mkdir -p assets
+          (cd "$work" && zip -qr "$GITHUB_WORKSPACE/assets/MDA-win-x86_64-$tag.zip" .)
+          rm -rf "$work"
+          ls -la assets
       - uses: softprops/action-gh-release@v2
         with:
           files: assets/*
