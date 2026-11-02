@@ -355,7 +355,7 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
-          files: "*.zip"
+          files: assets/*
           tag_name: ${{ needs.meta.outputs.tag }}
           body: ${{ needs.changelog.outputs.release_body }}
           draft: false
