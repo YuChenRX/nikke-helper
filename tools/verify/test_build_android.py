@@ -64,11 +64,13 @@ class AndroidAssetsTest(unittest.TestCase):
 
     def test_release_build_keeps_release_identity_and_update_sources(self):
         prepared = read_json(self.release_assets / "interface.json")
+        source = read_json(ROOT / "assets/interface.json")
         self.assertEqual(prepared["name"], "MDA")
         self.assertEqual(prepared["welcome"], "AndroidNotice.md")
         self.assertEqual(prepared["version"], "1.12.3")
-        self.assertEqual(prepared["github"], "https://github.com/1204244136/MDA")
-        self.assertEqual(prepared["mirrorchyan_rid"], "MDA")
+        # 更新来源跟随仓库自身的 interface.json：上游与 fork 都能成立。
+        self.assertEqual(prepared.get("github"), source.get("github"))
+        self.assertEqual(prepared.get("mirrorchyan_rid"), source.get("mirrorchyan_rid"))
         self.assertNotIn("mirrorchyan_multiplatform", prepared)
         self.assertTrue((self.release_assets / "AndroidNotice.md").is_file())
 

@@ -43,10 +43,18 @@ jobs:
             "agent/go-service/taskersink/membership/memberdata.go"
           )
 
+          # 结构文件：优先采用上游版本，合并后再回写 fork 定制
+          #   interface.json = github 指向 fork 仓库
+          #   install.yml    = 保留 contents/actions 写权限（同步推送需要）
+          STRUCTURAL_FILES=(
+            "assets/interface.json"
+            ".github/workflows/install.yml"
+          )
+
           if git merge --no-edit upstream/main; then
             echo "合并干净，无冲突"
           else
-            echo "合并出现冲突，尝试按白名单保留 fork 版本："
+            echo "合并出现冲突，尝试按白名单处理："
             for f in "${KNOWN_FORK_FILES[@]}"; do
               if git diff --name-only --diff-filter=U -- "$f" | grep -q .; then
                 git checkout --ours -- "$f"
@@ -54,6 +62,19 @@ jobs:
                 echo "  已保留 fork 版本：$f"
               fi
             done
+
+            for f in "${STRUCTURAL_FILES[@]}"; do
+              if git diff --name-only --diff-filter=U -- "$f" | grep -q .; then
+                git checkout --theirs -- "$f"
+                git add -- "$f"
+                echo "  已采用上游版本：$f"
+              fi
+            done
+
+            if [ -f tools/apply_fork_overrides.py ]; then
+              python tools/apply_fork_overrides.py
+              git add -A assets/interface.json .github/workflows/install.yml || true
+            fi
 
             remaining="$(git diff --name-only --diff-filter=U || true)"
             if [ -n "$remaining" ]; then
