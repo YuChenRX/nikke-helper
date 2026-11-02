@@ -6,8 +6,6 @@
     },
     "name": "MDA",
     "icon": "locales/MDA-Tiny.png",
-    "mirrorchyan_rid": "MDA",
-    "mirrorchyan_multiplatform": true,
     "github": "https://github.com/YuChenRX/nikke-helper",
     "version": "0.1.0",
     "contact": "$contact.file",
