@@ -5,11 +5,12 @@
         "format:aggressive": "prettier --print-width 20 --write \"assets/resource/pipeline/**/*.json\" \"assets/tasks/**/*.json\" && prettier --write \"assets/resource/pipeline/**/*.json\" \"assets/tasks/**/*.json\"",
         "format:check": "prettier --check \"**/*.{json,yml,yaml,md}\"",
         "check:theme": "node scripts/check-theme-sync.mjs",
+        "check:desc": "node scripts/check-desc.mjs",
         "test:theme": "node --test scripts/check-theme-sync.test.mjs"
     },
     "devDependencies": {
         "@biomejs/biome": "2.6.4",
-        "@nekosu/maa-tools": "1.2.1",
+        "@nekosu/maa-tools": "1.3.0",
         "@nekosu/prettier-plugin-maafw-sort": "1.1.0",
         "prettier": "3.9.10",
         "prettier-plugin-multiline-arrays": "4.1.11"

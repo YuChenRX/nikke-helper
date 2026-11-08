@@ -1,6 +1,11 @@
 package membership
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -41,6 +46,64 @@ func resetMembershipTestGlobals(t *testing.T) {
 	cachedDeviceCode = DeviceCodeV7{}
 	deviceCodeCached = false
 	deviceCodeMu.Unlock()
+}
+
+func TestFetchMemberStatusCancelsSlowResponse(t *testing.T) {
+	for _, sendHeaders := range []bool{false, true} {
+		t.Run(fmt.Sprintf("headers_%t", sendHeaders), func(t *testing.T) {
+			var calls atomic.Int32
+			release := make(chan struct{})
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				calls.Add(1)
+				if sendHeaders {
+					w.WriteHeader(http.StatusOK)
+					w.(http.Flusher).Flush()
+				}
+				<-release
+			}))
+			defer func() {
+				close(release)
+				server.Close()
+			}()
+			ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+			defer cancel()
+
+			started := time.Now()
+			_, err := fetchMemberStatusFrom(ctx, DeviceCodeV7{}, server.URL, &http.Transport{})
+			if !errors.Is(err, context.DeadlineExceeded) {
+				t.Fatalf("error = %v, want context deadline exceeded", err)
+			}
+			if elapsed := time.Since(started); elapsed > time.Second {
+				t.Fatalf("fetch took %v after a 100ms deadline", elapsed)
+			}
+			if got := calls.Load(); got != 1 {
+				t.Fatalf("membership status fetched %d times, want 1", got)
+			}
+		})
+	}
+}
+
+func TestFetchMemberStatusCancelsRetryWait(t *testing.T) {
+	var calls atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		calls.Add(1)
+		http.Error(w, "temporary failure", http.StatusBadGateway)
+	}))
+	defer server.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+
+	started := time.Now()
+	_, err := fetchMemberStatusFrom(ctx, DeviceCodeV7{}, server.URL, &http.Transport{})
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("error = %v, want context deadline exceeded", err)
+	}
+	if elapsed := time.Since(started); elapsed > time.Second {
+		t.Fatalf("retry wait took %v after a 100ms deadline", elapsed)
+	}
+	if got := calls.Load(); got != 1 {
+		t.Fatalf("membership status fetched %d times after deadline, want 1", got)
+	}
 }
 
 func TestStatusFromResponseUsesNewQuotaFields(t *testing.T) {
@@ -109,6 +172,9 @@ func TestCheckMembershipOfflineDoesNotUseExternalIdentity(t *testing.T) {
 	}
 	if !status.IsMember || !status.AllFeaturesUnlocked || !status.UnlimitedRuntime {
 		t.Fatal("离线状态未保持 fork 既有行为")
+	}
+	if status.UsingPersistentCache {
+		t.Fatalf("UsingPersistentCache = true, want false for Orange Free fallback")
 	}
 	if status.TierCode != "orange_free" {
 		t.Fatalf("TierCode = %q, want orange_free", status.TierCode)

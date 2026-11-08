@@ -39,13 +39,16 @@
                     "name": "SoloRaid"
                 },
                 {
-                    "name": "SmallEvent"
-                },
-                {
                     "name": "DailyRewards"
                 },
                 {
+                    "name": "SmallEvent"
+                },
+                {
                     "name": "LargeEvent"
+                },
+                {
+                    "name": "LimitedTimeRewards"
                 }
             ]
         }

@@ -136,6 +136,7 @@ class NavigationRun:
     def __init__(self, maa, resource, nodes):
         self.maa, self.resource, self.nodes = maa, resource, nodes
         self.refs, self.completed, self.actions, self.errors = [], [], [], []
+        self.failed_nodes = []
         self.page, self.reward, self.missing = "unknown", False, set()
         self.frozen, self.extra_visible = False, set()
         self.recognition_count = 0
@@ -201,15 +202,19 @@ class NavigationRun:
             "RookieArenaMainPageEntered": {"arena_sub"},
             "SpecialArenaMainPageEntered": {"arena_sub"},
             "ChampionArenaMainPageEntered": {"arena_sub"},
-            "CommonGoBack": {"arena_sub"},
+            # 各子页左下角都有返回键：竞技场子页退回竞技场首页，其他方舟子页直接退回方舟；
+            # 竞技场首页自己也有返回到方舟（顶栏只写「竞技场」，只能由 ArenaMainPageEntered 认出来）。
+            "CommonGoBack": {"arena", "arena_sub", "interception", "simulation", "tower"},
             "InterceptionMainPageEntered": {"interception"},
             "SimulationRoomMainPageEntered": {"simulation"},
-            "TribeTowerMainPageEntered": {"tower"},
+            "TribeTowerSelectPageEntered": {"tower"},
             "CommonClickHomeButton": {"unknown", "outpost", "arena", "interception", "simulation", "tower"},
             "CommonClickHall": {"unknown", "outpost", "arena", "interception", "simulation", "tower"},
             "CommonClickFreeState": {"hall"},
             "CommonNoticeVisible": {"hall_notice"},
-            "CommonClosePage": {"hall_notice"},
+            "CommonClosePage": {"hall_notice", "arena_reward_info"},
+            "CommonConfirmAction": {"arena_reward_info"},
+            "CommonConfirmReward": {"arena_reward_popup"},
             "ShopMainPageEntered": {"shop"},
             "HallEnterShop": {"hall"},
             "FriendManagementOnFriendPage": {"friend"},
@@ -225,7 +230,7 @@ class NavigationRun:
             "RecycleRoomEntered": {"recycle"},
         }
         if name == "ArenaClaimSpecialReward":
-            return self.page == "ark" and self.reward
+            return self.page == "ark"  # 领取后外层百分比仍然存在。
         return self.page in pages.get(name, set())
 
     def recognize(self, context, task_id, name, custom, params, image, roi, trans, out_box, out_detail):
@@ -249,17 +254,30 @@ class NavigationRun:
                 "CommonClickArk": "ark",
                 "__ScenePrivateClickArk": "ark",
                 "__ScenePrivateClickOutpost": "outpost", "__SceneArkClickArena": "arena",
-                "CommonGoBack": "arena",
                 "__SceneArkClickInterception": "interception",
                 "__SceneArkClickSimulationRoom": "simulation", "__SceneArkClickTribeTower": "tower",
                 "__ScenePrivateClickShop": "shop", "__ScenePrivateClickFriend": "friend",
                 "AdviseClickAdvisePage": "advise",
             }
-            if node in targets:
+            if node == "CommonGoBack":
+                # 子页返回：竞技场子页退到竞技场首页，其他方舟子页直接退回方舟。
+                if not self.frozen:
+                    self.page = "arena" if self.page == "arena_sub" else "ark"
+            elif node == "CommonClosePage" and self.page == "arena_reward_info":
+                self.page = "ark"
+            elif node in targets:
                 if not self.frozen:
                     self.page = targets[node]
             elif node == "ArenaClaimSpecialReward":
-                self.reward = False
+                self.page = "arena_reward_info"
+            elif node == "ArenaConfirmSpecialReward":
+                if self.reward:
+                    self.reward = False
+                    self.page = "arena_reward_popup"
+            elif node == "CommonConfirmReward":
+                self.page = "arena_reward_info"
+            elif node == "CommonConfirmAction":
+                pass  # 独立公共确认动作，用于核实其预算未被 And 引用消耗。
             elif node == "CommonClickBlank":
                 pass  # Existing interception entry popup dismissal.
             elif node in {"ArenaMain", "OutpostMain", "InterceptionMain", "SimulationRoomMain", "TribeTowerMain",
@@ -274,6 +292,8 @@ class NavigationRun:
     def event(self, handle, message, details, trans):
         if message == b"Node.PipelineNode.Succeeded":
             self.completed.append(json.loads(details)["node_details"]["name"])
+        elif message == b"Node.PipelineNode.Failed":
+            self.failed_nodes.append(json.loads(details)["name"])
 
     def run(self, entry, page, *, missing=(), reward=False, extra=None, frozen=False, visible=()):
         self.page, self.reward, self.missing = page, reward, set(missing)
@@ -281,6 +301,7 @@ class NavigationRun:
         self.completed.clear()
         self.actions.clear()
         self.errors.clear()
+        self.failed_nodes.clear()
         self.recognition_count = 0
         overrides = probe_overrides(self.nodes)
         for name, override in (extra or {}).items():
@@ -294,6 +315,8 @@ class NavigationRun:
             time.sleep(0.005)
         status = self.maa.MaaTaskerWait(self.tasker, job)
         assert not self.errors, self.errors
+        if status == SUCCEEDED:
+            assert not self.failed_nodes, (entry, "成功流程触发了节点失败", self.failed_nodes)
         return status
 
     def close(self):
@@ -337,9 +360,26 @@ def check_behaviors(run):
     # 逃生路径，子页上所有首页识别必然失败，整条任务会等到导航超时才判失败。
     assert run.run("SceneEnterArena", "arena_sub") == SUCCEEDED, (run.completed, run.actions)
     assert run.page == "arena" and run.actions == ["CommonGoBack"], run.actions
-    assert "__SceneArkEscapeArenaSubPage" in run.completed, run.completed
+    assert "__SceneArkEscapeSubPage" in run.completed, run.completed
     count += 1
     print("[PASS] 误入竞技场子页时点返回回到竞技场首页，不再以超时判失败")
+
+    # 模拟室/拦截战/无限之塔同样在方舟层级下，返回键直达方舟；缺这条逃生路径
+    # 就会绕回大厅跑完整登录恢复链（实测单次多耗 17~36 秒）。
+    for page in ("simulation", "interception", "tower"):
+        assert run.run("SceneEnterArk", page) == SUCCEEDED, (page, run.completed, run.actions)
+        assert run.page == "ark" and run.actions == ["CommonGoBack"], (page, run.actions)
+        assert "__SceneArkEscapeSubPage" in run.completed, (page, run.completed)
+        count += 1
+    print("[PASS] 方舟子页经返回键退回方舟，不再绕大厅")
+
+    # 竞技场首页顶栏只写「竞技场」，子页哨兵认不出；漏了 ArenaMainPageEntered 就会
+    # 退回大厅（实测 16:51 那次多耗 17 秒）。
+    assert run.run("SceneEnterArk", "arena") == SUCCEEDED, (run.completed, run.actions)
+    assert run.page == "ark" and run.actions == ["CommonGoBack"], run.actions
+    assert "__SceneArkEscapeSubPage" in run.completed, run.completed
+    count += 1
+    print("[PASS] 竞技场首页经返回键退回方舟，不再绕大厅")
 
     assert run.run("SceneEnterInterception", "ark", missing={"ArkEnterInterception"}) == FAILED
     assert not run.actions and run.recognition_count < 50000
@@ -388,10 +428,38 @@ def check_behaviors(run):
     reward = run.actions.index("ArenaClaimSpecialReward")
     enter = run.actions.index("__SceneArkClickArena")
     assert reward < enter, run.actions
+    assert run.actions.count("ArenaClaimSpecialReward") == 1, run.actions
+    assert run.actions.count("ArenaConfirmSpecialReward") == 1, run.actions
+    assert run.actions.count("CommonConfirmReward") == 1, run.actions
+    assert run.actions.count("CommonClosePage") >= 1, run.actions
     assert not any(n in run.completed for n in disabled), run.completed
     assert run.page == "arena"
     count += 1
     print("[PASS] Arena从大厅先到方舟领奖再进入竞技场，可选关闭保持关闭")
+
+    assert run.run("ArenaMain", "ark", extra=disabled) == SUCCEEDED, run.completed
+    assert run.page == "arena"
+    assert run.actions == ["ArenaMain", "ArenaClaimSpecialReward", "ArenaConfirmSpecialReward",
+                           "CommonClosePage", "__SceneArkClickArena"], run.actions
+    count += 1
+    print("[PASS] 无累积奖励时只开窗和领取各一次，随后关闭详情继续进入竞技场")
+
+    reward_disabled = {**disabled, **option_overrides("Arena.json", SpecialReward="No")}
+    assert run.run("ArenaMain", "ark", reward=True, extra=reward_disabled) == SUCCEEDED
+    assert run.page == "arena" and run.reward
+    assert run.actions == ["ArenaMain", "__SceneArkClickArena"], run.actions
+    count += 1
+    print("[PASS] 关闭累积奖励选项时直接进入竞技场，不开窗、不领取")
+
+    budget = {"CommonClosePage": {"next": ["CommonConfirmAction"]},
+              "CommonConfirmAction": {"max_hit": 1, "next": []}}
+    assert run.run("ArenaClaimSpecialReward", "ark", reward=True, extra=budget,
+                   visible={"CommonConfirmAction"}) == SUCCEEDED, run.completed
+    assert run.page == "ark" and run.visible("ArenaClaimSpecialReward")
+    assert run.actions == ["ArenaClaimSpecialReward", "ArenaConfirmSpecialReward", "CommonConfirmReward",
+                           "CommonClosePage", "CommonConfirmAction"], run.actions
+    count += 1
+    print("[PASS] 领奖后百分比仍可见；专属确认只借用识别，不占用公共确认动作预算")
 
     advise_disabled = option_overrides("Advise.json", NikkeAdvise="No")
     for page in ("nikke", "advise"):
