@@ -13,7 +13,21 @@ EXECUTABLE = BASE / 'install' / 'agent' / 'go-service.exe'
 STAMP = datetime.now().strftime('%Y%m%d_%H%M%S')
 BACKUP = BASE / 'release-deploy-backups' / f'backup_{STAMP}'
 SKIP_SOURCE = {'MaaCommonAssets', 'cache', 'debug'}
+# 运行目录与运行时会用到的顶层文件：只能新增/更新，不能因为 assets 里没有就删掉
 PROTECTED_TARGET = {'cache', 'debug', 'config', 'agent', 'maafw', 'go-service'}
+PROTECTED_FILES = {
+    'alas-app.exe', 'alas.exe', 'go-service.exe', 'LICENSE', 'README.md',
+    'logo.ico', 'update-and-start.ps1',
+}
+
+
+def is_protected(relative: Path) -> bool:
+    if relative.parts[0] in PROTECTED_TARGET:
+        return True
+    if len(relative.parts) == 1:
+        name = relative.name
+        return name in PROTECTED_FILES or '.bak' in name or '.pre' in name
+    return False
 
 
 def collect(root: Path) -> dict[Path, Path]:
@@ -35,7 +49,7 @@ def main() -> None:
         elif existing.read_bytes() != path.read_bytes():
             changed.append(relative)
     for relative in target:
-        if relative.parts[0] in PROTECTED_TARGET:
+        if is_protected(relative):
             continue
         if relative in source or relative == Path('interface.json'):
             continue

@@ -1,4 +1,4 @@
-# MDA 环境自检 / 更新后自检（AAA + Interception）
+﻿# MDA 环境自检 / 更新后自检（AAA + Interception）
 #
 # 结论性说明（已实测验证）：
 #   MaaFramework 的 Win32 控制器「Interception」模式是 **直接和驱动通信** 的
@@ -96,3 +96,26 @@ if (Test-Path $cfg) {
 
 Write-Host ""
 Write-Host "完成。打开 MDA（release\alas-app.exe）后，连接方式选 AAA 即可。"
+
+# 追加：Interception 驱动（AAA 控制器）自检
+$interceptionOk = $false
+try {
+    $h = [System.IO.File]::Open('\.\interception00', 'Open', 'ReadWrite', 'None')
+    $h.Close()
+    $interceptionOk = $true
+} catch { }
+
+if ($interceptionOk) {
+    Write-Host 'Interception 驱动：可用（AAA 控制器可正常工作）' -ForegroundColor Green
+} else {
+    $drivers = @(
+        'C:\Windows\System32\drivers\keyboard.sys',
+        'C:\Windows\System32\drivers\mouse.sys'
+    ) | Where-Object { Test-Path $_ }
+    if ($drivers.Count -gt 0) {
+        Write-Host 'Interception 驱动：已安装但未加载，请重启后再试' -ForegroundColor Yellow
+    } else {
+        Write-Host 'Interception 驱动：未安装（AAA 控制器不可用，非驱动模式无法点击 NIKKE）' -ForegroundColor Red
+        Write-Host '  安装：管理员执行 install-interception.exe /install 后重启' -ForegroundColor Red
+    }
+}
