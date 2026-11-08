@@ -37,18 +37,23 @@ jobs:
         run: |
           before=$(git rev-parse HEAD)
 
+          # .gitattributes 中 merge=ours 的文件需要驱动生效（memberdata_test.go）
+          git config merge.ours.driver true
+
           # fork 的已知定制文件：与上游冲突时保留 fork 版本
-          #   memberdata.go = 完全离线会员模式（移除 doropay.top 网络校验与设备码上报）
+          #   memberdata_test.go = 离线会员行为的测试（.gitattributes 已声明 merge=ours，这里是双保险）
           KNOWN_FORK_FILES=(
-            "agent/go-service/taskersink/membership/memberdata.go"
+            "agent/go-service/taskersink/membership/memberdata_test.go"
           )
 
           # 结构文件：优先采用上游版本，合并后再回写 fork 定制
-          #   interface.json = github 指向 fork 仓库
-          #   install.yml    = 保留 contents/actions 写权限（同步推送需要）
+          #   interface.json  = github 指向 fork 仓库
+          #   install.yml     = 保留 contents/actions 写权限（同步推送需要）
+          #   memberdata.go   = 取上游结构（超时预算、缓存回退、新增字段），再回写离线 checkMembership
           STRUCTURAL_FILES=(
             "assets/interface.json"
             ".github/workflows/install.yml"
+            "agent/go-service/taskersink/membership/memberdata.go"
           )
 
           if git merge --no-edit upstream/main; then
@@ -74,6 +79,12 @@ jobs:
             if [ -f tools/apply_fork_overrides.py ]; then
               python tools/apply_fork_overrides.py
               git add -A assets/interface.json .github/workflows/install.yml || true
+            fi
+
+            # 取上游的会员实现后回写离线 checkMembership，避免保留整份旧文件导致编译不过
+            if [ -f tools/apply_membership_offline.py ]; then
+              python tools/apply_membership_offline.py
+              git add -A agent/go-service/taskersink/membership/memberdata.go || true
             fi
 
             remaining="$(git diff --name-only --diff-filter=U || true)"

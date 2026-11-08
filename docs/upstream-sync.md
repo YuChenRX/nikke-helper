@@ -34,3 +34,27 @@ python -m unittest tools.verify.test_sync_permissions -v
 也可在本地合并上游、验证后，由用户用具有工作流写权限的身份推送到 fork。推送成功后，默认 Actions 令牌可以继续同步不涉及工作流文件的更新；将来再次出现工作流变更，仍需手动处理或配置专用令牌。
 
 本地 commit 不会自动推送。仅修改本地文件不能修复远端正在运行的旧工作流；需由用户确认推送后才会生效。
+
+## 冲突自动处置清单
+
+`Merge upstream` 步骤在合并冲突时按三类处理，处理完仍有未解决文件才报错退出：
+
+| 类别 | 文件 | 处理方式 | 原因 |
+| --- | --- | --- | --- |
+| fork 自有 | `agent/go-service/taskersink/membership/memberdata_test.go` | 保留 fork 版本 | 测试约束的是离线会员行为，上游没有这条路径 |
+| 结构文件 | `assets/interface.json` | 取上游后回写 | 需要 fork 的 `github` 地址，且不能带回 `mirrorchyan_rid` |
+| 结构文件 | `.github/workflows/install.yml` | 取上游后回写 | 需要 `contents/actions` 写权限、去安卓作业、单包打包 |
+| 结构文件 | `agent/go-service/taskersink/membership/memberdata.go` | 取上游后回写 `checkMembership` | 上游的超时预算、缓存回退、新增字段要保留，只把会员校验换回离线实现 |
+
+回写脚本：
+
+- `tools/apply_fork_overrides.py`：`interface.json` 的 `github`、`install.yml` 的 `permissions`、去 `android` 作业、单桌面包打包。
+- `tools/apply_membership_offline.py`：只替换 `checkMembership` 函数体为离线实现，其余上游改动原样保留。
+
+`memberdata_test.go` 同时登记在 `.gitattributes` 的 `merge=ours`，所以本地直接 `git merge upstream/main` 也会自动保留 fork 版本，无需手工解冲突。`merge=ours` 依赖驱动生效：
+
+```bash
+git config merge.ours.driver true
+```
+
+工作流在合并前已执行该配置；本机首次使用也需执行一次。注意 `merge=ours` 会让该文件的上游改动整体被丢弃，这是有意的取舍——该测试文件由 fork 拥有。

@@ -5,3 +5,6 @@
 # Isolate binary files in case the auto-detection algorithm fails and
 # marks them as text files (which could brick them).
 *.{png,jpg,jpeg,gif,webp,woff,woff2} binary
+
+# fork 自有的会员离线测试：同步上游时自动保留本地版本，避免每次手工解冲突
+agent/go-service/taskersink/membership/memberdata_test.go merge=ours
