@@ -117,7 +117,10 @@ for (const file of files) {
     }
     if (!data || typeof data !== "object") continue;
 
-    for (const [nodeName, node] of Object.entries(data)) {
+    for (const [
+        nodeName,
+        node,
+    ] of Object.entries(data)) {
         if (!node || typeof node !== "object" || Array.isArray(node)) continue;
         if (!("desc" in node)) continue;
 
@@ -151,7 +154,9 @@ for (const e of errors) console.error(`${label(31)}error${label(0)} ${e}`);
 
 const scanned = files.length;
 if (errors.length > 0) {
-    console.error(`\n${label(31)}desc 规范校验失败：${errors.length} 项错误，${warnings.length} 项警告（${scanned} 个文件）。${label(0)}`);
+    console.error(
+        `\n${label(31)}desc 规范校验失败：${errors.length} 项错误，${warnings.length} 项警告（${scanned} 个文件）。${label(0)}`,
+    );
     process.exit(1);
 }
 if (strict && warnings.length > 0) {
