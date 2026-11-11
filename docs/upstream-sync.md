@@ -39,12 +39,12 @@ python -m unittest tools.verify.test_sync_permissions -v
 
 `Merge upstream` 步骤在合并冲突时按三类处理，处理完仍有未解决文件才报错退出：
 
-| 类别 | 文件 | 处理方式 | 原因 |
-| --- | --- | --- | --- |
-| fork 自有 | `agent/go-service/taskersink/membership/memberdata_test.go` | 保留 fork 版本 | 测试约束的是离线会员行为，上游没有这条路径 |
-| 结构文件 | `assets/interface.json` | 取上游后回写 | 需要 fork 的 `github` 地址，且不能带回 `mirrorchyan_rid` |
-| 结构文件 | `.github/workflows/install.yml` | 取上游后回写 | 需要 `contents/actions` 写权限、去安卓作业、单包打包 |
-| 结构文件 | `agent/go-service/taskersink/membership/memberdata.go` | 取上游后回写 `checkMembership` | 上游的超时预算、缓存回退、新增字段要保留，只把会员校验换回离线实现 |
+| 类别      | 文件                                                        | 处理方式                       | 原因                                                               |
+| --------- | ----------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------ |
+| fork 自有 | `agent/go-service/taskersink/membership/memberdata_test.go` | 保留 fork 版本                 | 测试约束的是离线会员行为，上游没有这条路径                         |
+| 结构文件  | `assets/interface.json`                                     | 取上游后回写                   | 需要 fork 的 `github` 地址，且不能带回 `mirrorchyan_rid`           |
+| 结构文件  | `.github/workflows/install.yml`                             | 取上游后回写                   | 需要 `contents/actions` 写权限、去安卓作业、单包打包               |
+| 结构文件  | `agent/go-service/taskersink/membership/memberdata.go`      | 取上游后回写 `checkMembership` | 上游的超时预算、缓存回退、新增字段要保留，只把会员校验换回离线实现 |
 
 回写脚本：
 
