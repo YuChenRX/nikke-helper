@@ -39,12 +39,13 @@ python -m unittest tools.verify.test_sync_permissions -v
 
 `Merge upstream` 步骤在合并冲突时按三类处理，处理完仍有未解决文件才报错退出：
 
-| 类别 | 文件 | 处理方式 | 原因 |
-| --- | --- | --- | --- |
-| fork 自有 | `agent/go-service/taskersink/membership/memberdata_test.go` | 保留 fork 版本 | 测试约束的是离线会员行为，上游没有这条路径 |
-| 结构文件 | `assets/interface.json` | 取上游后回写 | 需要 fork 的 `github` 地址，且不能带回 `mirrorchyan_rid` |
-| 结构文件 | `.github/workflows/install.yml` | 取上游后回写 | 需要 `contents/actions` 写权限、去安卓作业、单包打包 |
-| 结构文件 | `agent/go-service/taskersink/membership/memberdata.go` | 取上游后回写 `checkMembership` | 上游的超时预算、缓存回退、新增字段要保留，只把会员校验换回离线实现 |
+| 类别      | 文件                                                        | 处理方式                       | 原因                                                               |
+| --------- | ----------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------ |
+| fork 自有 | `agent/go-service/taskersink/membership/memberdata_test.go` | 保留 fork 版本                 | 测试约束的是离线会员行为，上游没有这条路径                         |
+| 结构文件  | `assets/interface.json`                                     | 取上游后回写                   | 需要 fork 的 `github` 地址，且不能带回 `mirrorchyan_rid`           |
+| 结构文件  | `.github/workflows/install.yml`                             | 取上游后回写                   | 需要 `contents/actions` 写权限、去安卓作业、单包打包               |
+| 结构文件  | `agent/go-service/taskersink/membership/memberdata.go`      | 取上游后回写 `checkMembership` | 上游的超时预算、缓存回退、新增字段要保留，只把会员校验换回离线实现 |
+| 结构文件  | `scripts/check-desc.mjs`                                    | 直接取上游                     | desc 护栏由上游持续加规则，fork 不保留旧版                         |
 
 回写脚本：
 
@@ -58,3 +59,24 @@ git config merge.ours.driver true
 ```
 
 工作流在合并前已执行该配置；本机首次使用也需执行一次。注意 `merge=ours` 会让该文件的上游改动整体被丢弃，这是有意的取舍——该测试文件由 fork 拥有。
+
+## 2026-11-14 `scripts/check-desc.mjs` 冲突
+
+三次定时同步（`43528662973`、`43567340333`、`43603863846`）都在同一处失败：
+
+```text
+CONFLICT (content): Merge conflict in scripts/check-desc.mjs
+```
+
+原因不是上游故障：上游给 desc 护栏加了新规则（C6：`//` 注释不许用日期给实测结论背书，另含 `collectComments` 等实现），fork 早先只做过 prettier 格式化，两边都改过同一文件。该文件属于结构文件，已加入 `STRUCTURAL_FILES` 直接取上游；同步时若再冲突会自动采用上游版本。
+
+采用上游版本后 `npm run check:desc` 会在注释含日期时给出 C6 警告，已按规则改写 `assets/resource/pipeline/Arena/Arena.json` 里 `ArenaWaitSpecialRewardResult` 的注释为纯结论与数值，当前为 0 警告。
+
+本地验证顺序：
+
+```bash
+npm run check:desc        # desc/注释护栏
+npm run check:theme       # 活动主题路由
+npm run test:theme
+npx --no-install maa-tools check
+```

@@ -50,10 +50,12 @@ jobs:
           #   interface.json  = github 指向 fork 仓库
           #   install.yml     = 保留 contents/actions 写权限（同步推送需要）
           #   memberdata.go   = 取上游结构（超时预算、缓存回退、新增字段），再回写离线 checkMembership
+          #   check-desc.mjs  = 上游 desc 护栏持续加规则（如 C6）， fork 不应保留旧版
           STRUCTURAL_FILES=(
             "assets/interface.json"
             ".github/workflows/install.yml"
             "agent/go-service/taskersink/membership/memberdata.go"
+            "scripts/check-desc.mjs"
           )
 
           if git merge --no-edit upstream/main; then
