@@ -53,7 +53,9 @@
 ## 项目约定
 
 - 与用户对话、生成文件内容、生成 commit 信息时优先使用中文。
-- commit 后不要自动 push；由用户决定何时推送。
+- commit 后直接 `git push origin main`，不要停下来询问是否推送；用户已授权自动推送。（2026-11-15 更新，覆盖旧的“由用户决定何时推送”）
+- 本机 SSH 到 GitHub 会被代理挡掉（`Connection closed by 198.18.0.77:22`）；`origin` 已改为 HTTPS，凭据由 `gh auth setup-git` 提供，推送失败先试 `git push origin main`，不要回退到 SSH。
+- 远端定时同步失败时：先看 `gh run view <id> -R YuChenRX/nikke-helper --log-failed`，修好白名单/冲突后在本地合并验证并推送，必要时 `gh workflow run "sync upstream release"` 立即验证，不必等下一个整点。
 - commit 信息应使用中文并遵守 Conventional Commits 风格。
 - commit scope 涉及具体任务时，使用任务本身的正式名称并保持原有大小写和连续拼写（例如 `SoloRaid`，不要写成 `solo-raid`）。
 - commit scope 涉及活动主题时，使用对应任务的正式名称 `LargeEvent` 或 `SmallEvent`，不要使用具体主题名（例如 `ProjectMatis`）。
