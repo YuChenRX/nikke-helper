@@ -58,6 +58,13 @@ jobs:
             "scripts/check-desc.mjs"
           )
 
+          # fork 不维护 pipeline 资源内容：冲突时按上游解决，避免整点任务反复失败
+          # 需要保留的 fork 定制必须落在 KNOWN_FORK_FILES / STRUCTURAL_FILES 里
+          UPSTREAM_OWNED_PREFIXES=(
+            "assets/resource/pipeline/"
+            "assets/resource/model/"
+          )
+
           if git merge --no-edit upstream/main; then
             echo "合并干净，无冲突"
           else
@@ -76,6 +83,15 @@ jobs:
                 git add -- "$f"
                 echo "  已采用上游版本：$f"
               fi
+            done
+
+            for prefix in "${UPSTREAM_OWNED_PREFIXES[@]}"; do
+              while IFS= read -r f; do
+                [ -n "$f" ] || continue
+                git checkout --theirs -- "$f"
+                git add -- "$f"
+                echo "  已采用上游版本（资源归上游）：$f"
+              done <<< "$(git diff --name-only --diff-filter=U -- "$prefix*")"
             done
 
             if [ -f tools/apply_fork_overrides.py ]; then

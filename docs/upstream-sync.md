@@ -39,13 +39,14 @@ python -m unittest tools.verify.test_sync_permissions -v
 
 `Merge upstream` 步骤在合并冲突时按三类处理，处理完仍有未解决文件才报错退出：
 
-| 类别      | 文件                                                        | 处理方式                       | 原因                                                               |
-| --------- | ----------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------ |
-| fork 自有 | `agent/go-service/taskersink/membership/memberdata_test.go` | 保留 fork 版本                 | 测试约束的是离线会员行为，上游没有这条路径                         |
-| 结构文件  | `assets/interface.json`                                     | 取上游后回写                   | 需要 fork 的 `github` 地址，且不能带回 `mirrorchyan_rid`           |
-| 结构文件  | `.github/workflows/install.yml`                             | 取上游后回写                   | 需要 `contents/actions` 写权限、去安卓作业、单包打包               |
-| 结构文件  | `agent/go-service/taskersink/membership/memberdata.go`      | 取上游后回写 `checkMembership` | 上游的超时预算、缓存回退、新增字段要保留，只把会员校验换回离线实现 |
-| 结构文件  | `scripts/check-desc.mjs`                                    | 直接取上游                     | desc 护栏由上游持续加规则，fork 不保留旧版                         |
+| 类别               | 文件                                                        | 处理方式                       | 原因                                                               |
+| ------------------ | ----------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------ |
+| fork 自有          | `agent/go-service/taskersink/membership/memberdata_test.go` | 保留 fork 版本                 | 测试约束的是离线会员行为，上游没有这条路径                         |
+| 结构文件           | `assets/interface.json`                                     | 取上游后回写                   | 需要 fork 的 `github` 地址，且不能带回 `mirrorchyan_rid`           |
+| 结构文件           | `.github/workflows/install.yml`                             | 取上游后回写                   | 需要 `contents/actions` 写权限、去安卓作业、单包打包               |
+| 结构文件           | `agent/go-service/taskersink/membership/memberdata.go`      | 取上游后回写 `checkMembership` | 上游的超时预算、缓存回退、新增字段要保留，只把会员校验换回离线实现 |
+| 结构文件           | `scripts/check-desc.mjs`                                    | 直接取上游                     | desc 护栏由上游持续加规则，fork 不保留旧版                         |
+| 上游所有的资源路径 | `assets/resource/pipeline/**`、`assets/resource/model/**`   | 直接取上游                     | fork 在这两处没有定制；不兜底会让整点同步小时级反复失败            |
 
 回写脚本：
 
@@ -59,6 +60,14 @@ git config merge.ours.driver true
 ```
 
 工作流在合并前已执行该配置；本机首次使用也需执行一次。注意 `merge=ours` 会让该文件的上游改动整体被丢弃，这是有意的取舍——该测试文件由 fork 拥有。
+
+## 2026-11-15 合并验证与资源目录兜底
+
+上游新增 cash shop 自动奖励弹窗、免费招募兜底、公告红点流程等修复（共 83 个文件）。本地合并只有 `assets/resource/pipeline/Arena/Arena.json` 一处冲突：上游同样按 C6 改写了累积奖励观察窗口的注释，采用上游版本，本地等价改动废弃。
+
+验证：`check:desc` 0 警告、`check:theme` / `test:theme` 通过、`go build ./...` 与 `go test ./...`（767 passed）。
+
+为防止同类冲突每小时重跑失败，`Merge upstream` 新增 `UPSTREAM_OWNED_PREFIXES`：`assets/resource/pipeline/` 与 `assets/resource/model/` 下的冲突一律取上游。fork 自有改动必须登记到 `KNOWN_FORK_FILES` 或 `STRUCTURAL_FILES`，否则会被上游覆盖。
 
 ## 2026-11-14 `scripts/check-desc.mjs` 冲突
 
