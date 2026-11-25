@@ -8,9 +8,63 @@
             "group": [
                 "utility"
             ],
+            "option": [
+                "LuckyBoxOpeningUseRecruitmentItems",
+                "LuckyBoxOpeningOpenProfileCustomPack"
+            ],
             "doc": [
                 "$task.LuckyBoxOpening.doc"
             ]
         }
-    ]
+    ],
+    "option": {
+        "LuckyBoxOpeningUseRecruitmentItems": {
+            "type": "switch",
+            "label": "$option.LuckyBoxOpeningUseRecruitmentItems.label",
+            "description": "$option.LuckyBoxOpeningUseRecruitmentItems.description",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "LuckyBoxOpeningUseRecruitmentItems": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "LuckyBoxOpeningUseRecruitmentItems": {
+                            "enabled": false
+                        }
+                    }
+                }
+            ],
+            "default_case": "Yes"
+        },
+        "LuckyBoxOpeningOpenProfileCustomPack": {
+            "type": "switch",
+            "label": "$option.LuckyBoxOpeningOpenProfileCustomPack.label",
+            "description": "$option.LuckyBoxOpeningOpenProfileCustomPack.description",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "LuckyBoxOpeningOpenProfileCustomPack": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "LuckyBoxOpeningOpenProfileCustomPack": {
+                            "enabled": false
+                        }
+                    }
+                }
+            ],
+            "default_case": "Yes"
+        }
+    }
 }

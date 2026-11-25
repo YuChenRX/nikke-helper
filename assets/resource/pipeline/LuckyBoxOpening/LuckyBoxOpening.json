@@ -71,6 +71,8 @@
             "[JumpBack]LuckyBoxOpeningSelectCollectionCategory",
             "[JumpBack]LuckyBoxOpeningSelectUpgradingCategory",
             "[JumpBack]LuckyBoxOpeningSelectSkillsCategory",
+            "[JumpBack]LuckyBoxOpeningUseRecruitmentItems",
+            "[JumpBack]LuckyBoxOpeningOpenProfileCustomPack",
             "CommonEndTask"
         ]
     },
@@ -103,7 +105,7 @@
                     60,
                     340
                 ],
-                "template": "LuckyBoxOpening/Recruitment.png" //选中态（蓝）实测仍有 0.762，过默认阈值，不必单独做选中模板
+                "template": "LuckyBoxOpening/Recruitment.png" // 选中态（蓝）仍可稳定高于默认阈值，不必单独做选中模板
             }
         },
         "action": {
@@ -257,10 +259,10 @@
             "type": "OCR",
             "param": {
                 "roi": [
-                    1150,
-                    135,
-                    140,
-                    40
+                    1193, // 仅框住「全部使用」四字，避开左侧复选框与右侧提示图标
+                    143,
+                    44,
+                    20
                 ],
                 "expected": [
                     "全部使用"
@@ -356,6 +358,238 @@
         "next": [
             "[JumpBack]CommonConfirmReward",
             "CommonEndTask"
+        ]
+    },
+    "LuckyBoxOpeningUseRecruitmentItems": {
+        "desc": "点红点使用招募道具", // 统一「全部使用」不勾选凭证与铸模，全部使用走完后再切回招募页逐个点红点开启
+        "enabled": true, // 由选项 LuckyBoxOpeningUseRecruitmentItems 控制，默认开启
+        "max_hit": 1,
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [
+                    10,
+                    140,
+                    60,
+                    340
+                ],
+                "template": "LuckyBoxOpening/Recruitment.png"
+            }
+        },
+        "action": {
+            "type": "Click"
+        },
+        "post_wait_freezes": {
+            "time": 500,
+            "target": [
+                61,
+                173,
+                1170,
+                447
+            ]
+        },
+        "next": [
+            "[JumpBack]LuckyBoxOpeningClickRedDot",
+            "CommonEndTask"
+        ]
+    },
+    "LuckyBoxOpeningClickRedDot": {
+        "desc": "点击红点",
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [
+                    61,
+                    173,
+                    1170,
+                    447
+                ],
+                "template": [
+                    "Common/RedDot9x9.png", // 招募页红点优先用 RedDot9x9，旧 RedDot 在部分道具上匹配偏低会漏检
+                    "Common/RedDot.png"
+                ],
+                "threshold": 0.8
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target_offset": [
+                    -20,
+                    20,
+                    0,
+                    0
+                ]
+            }
+        },
+        "post_wait_freezes": {
+            "time": 200,
+            "target": [
+                460,
+                140,
+                360,
+                550
+            ]
+        },
+        "next": [
+            "LuckyBoxOpeningClickMax",
+            "LuckyBoxOpeningClickConfirm"
+        ]
+    },
+    "LuckyBoxOpeningClickMax": {
+        "desc": "点击 MAX",
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "LuckyBoxOpeningClickMaxVisible",
+                    "LuckyBoxOpeningClickMaxAvailable"
+                ]
+            }
+        },
+        "action": {
+            "type": "Click"
+        },
+        "next": [
+            "LuckyBoxOpeningClickConfirm"
+        ]
+    },
+    "LuckyBoxOpeningClickMaxVisible": {
+        "desc": "MAX 可见",
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [
+                    743,
+                    425,
+                    66,
+                    184
+                ],
+                "template": [
+                    "Common/MAX.png"
+                ]
+            }
+        }
+    },
+    "LuckyBoxOpeningClickMaxAvailable": {
+        "desc": "MAX 可点击",
+        "recognition": {
+            "type": "ColorMatch",
+            "param": {
+                "roi": "LuckyBoxOpeningClickMaxVisible",
+                "lower": [
+                    140,
+                    140,
+                    140
+                ],
+                "upper": [
+                    255,
+                    255,
+                    255
+                ],
+                "count": 50
+            }
+        }
+    },
+    "LuckyBoxOpeningClickConfirm": {
+        "desc": "点击确认",
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [
+                    479,
+                    508,
+                    323,
+                    183
+                ],
+                "template": [
+                    "Common/ConfirmWithFilledCircle.png"
+                ]
+            }
+        },
+        "action": {
+            "type": "Click"
+        },
+        "post_wait_freezes": 500,
+        "next": [
+            "CommonConfirmRecruit",
+            "CommonConfirmReward",
+            "LuckyBoxOpeningClickConfirm" //兜底
+        ]
+    },
+    "LuckyBoxOpeningOpenProfileCustomPack": {
+        "desc": "点红点开启简介个性化礼包", // 「全部使用」不会勾选简介个性化礼包，走完后切到其他分类检查前 3 格红点开启
+        "enabled": true, // 由选项 LuckyBoxOpeningOpenProfileCustomPack 控制，默认开启
+        "max_hit": 1,
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [
+                    10,
+                    398,
+                    60,
+                    50
+                ],
+                "template": "LuckyBoxOpening/Others.png" // 小模板仅框住第 6 栏区域，避免跨栏误匹配
+            }
+        },
+        "action": {
+            "type": "Click"
+        },
+        "post_wait_freezes": {
+            "time": 500,
+            "target": [
+                61,
+                173,
+                1170,
+                447
+            ]
+        },
+        "next": [
+            "[JumpBack]LuckyBoxOpeningClickProfileCustomPackRedDot",
+            "CommonEndTask"
+        ]
+    },
+    "LuckyBoxOpeningClickProfileCustomPackRedDot": {
+        "desc": "点击简介个性化礼包红点", // 限定前 3 格右上角顶部条带，兼顾前置其他未开启礼盒并避开道具主体与后续格位误开
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [
+                    95,
+                    170,
+                    165,
+                    30
+                ],
+                "template": [
+                    "Common/RedDot9x9.png",
+                    "Common/RedDot.png"
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target_offset": [
+                    -20,
+                    20,
+                    0,
+                    0
+                ]
+            }
+        },
+        "post_wait_freezes": {
+            "time": 200,
+            "target": [
+                460,
+                140,
+                360,
+                550
+            ]
+        },
+        "next": [
+            "LuckyBoxOpeningClickMax",
+            "LuckyBoxOpeningClickConfirm"
         ]
     }
 }

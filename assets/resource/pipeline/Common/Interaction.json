@@ -20,6 +20,77 @@
             "type": "Click"
         }
     },
+    "CommonConfirmRecruitVisible": {
+        "desc": "招募结果页确认按钮",
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [
+                    485,
+                    633,
+                    228,
+                    34
+                ],
+                "expected": [
+                    "确认"
+                ]
+            }
+        }
+    },
+    "CommonConfirmRecruit": {
+        "desc": "点击招募结果确认", // 大活动签到与开宝箱铸模结果页同样复用该确认按钮
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "CommonConfirmRecruitVisible"
+                ]
+            }
+        },
+        "action": {
+            "type": "Click"
+        },
+        "post_wait_freezes": 1000
+    },
+    "CommonSettleRecruit": {
+        "desc": "推进招募演出至结果页", // 未出现结果页确认按钮时持续跳过剧情或点击空白
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "CommonConfirmRecruitVisible"
+                ]
+            }
+        },
+        "inverse": true,
+        "next": [
+            "CommonConfirmRecruitVisible",
+            "[JumpBack]CommonSkipPlot",
+            "[JumpBack]CommonClickBlank"
+        ]
+    },
+    "CommonClickNextRecruit": {
+        "desc": "切换下一个招募卡池",
+        "max_hit": 15,
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [
+                    1232,
+                    349,
+                    46,
+                    54
+                ],
+                "template": [
+                    "Common/NextRecruit.png"
+                ]
+            }
+        },
+        "action": {
+            "type": "Click"
+        },
+        "post_wait_freezes": 1000
+    },
     "CommonConfirmAction": {
         "desc": "操作确认",
         "max_hit": 20,
@@ -497,7 +568,8 @@
             "[JumpBack]DailyLoginRewardsFlow", //登录后的签到页可能晚于铃铛图标加载完成
             "CommonFreeStateFlow",
             "CommonClickFreeState", //兜底
-            "[JumpBack]CommonCloseSale"
+            "[JumpBack]CommonCloseSale",
+            "[JumpBack]CommonConfirmReward" //每日探索奖励等结算弹窗可能晚于铃铛出现，先领取再让后续流程清理底层窗口
         ]
     },
     "CommonClickHall": {
@@ -526,8 +598,26 @@
             "SceneEnterArk"
         ]
     },
-    "CommonArkEntered": {
-        "desc": "处于方舟内部",
+    "__CommonArkTitleTight": {
+        "desc": "左上角方舟标准位",
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [
+                    15,
+                    17,
+                    30,
+                    19
+                ],
+                "expected": [
+                    "方舟"
+                ],
+                "only_rec": true // 紧贴文字本体跳过文本检测，避免扁长合批截断与棋盘格背景误识
+            }
+        }
+    },
+    "__CommonArkTitleWide": {
+        "desc": "左上角方舟宽区兜底", // 宽区留白多不宜跳过检测，供安全区偏移设备自适应框选
         "recognition": {
             "type": "OCR",
             "param": {
@@ -539,6 +629,18 @@
                 ],
                 "expected": [
                     "方舟"
+                ]
+            }
+        }
+    },
+    "CommonArkEntered": {
+        "desc": "处于方舟内部", // 优先紧框直识隔离合批截断，未命中再回退宽区检测
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    "__CommonArkTitleTight",
+                    "__CommonArkTitleWide"
                 ]
             }
         }
@@ -595,6 +697,24 @@
             }
         }
     },
+    "CommonOutpostRedDotVisible": {
+        "desc": "大厅的前哨基地红点或New",
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [
+                    434,
+                    511,
+                    28,
+                    28
+                ], // 仅框前哨基地入口右上角角标区，避开上方商店与下方防御奖励红点
+                "template": [
+                    "Common/RedDot.png",
+                    "Common/New.png"
+                ]
+            }
+        }
+    },
     "CommonClickEventChange": {
         "desc": "点击活动轮换按钮",
         "max_hit": 1,
@@ -625,18 +745,12 @@
         "action": "StopTask"
     },
     "CommonArkCornerVisible": {
-        "desc": "左上角的方舟可见",
+        "desc": "左上角的方舟可见", // 复用 CommonArkEntered，避免重复维护同一标题识别
         "recognition": {
-            "type": "OCR",
+            "type": "Or",
             "param": {
-                "roi": [
-                    17,
-                    16,
-                    50,
-                    20
-                ],
-                "expected": [
-                    "方舟"
+                "any_of": [
+                    "CommonArkEntered"
                 ]
             }
         }
